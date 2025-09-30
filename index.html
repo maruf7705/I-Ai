@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Chatbot</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f7fa;
+      margin: 0;
+      padding: 20px;
+    }
+    #chat-container {
+      max-width: 500px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    #chat-messages {
+      height: 450px;
+      padding: 20px;
+      overflow-y: auto;
+      background: #fafafa;
+    }
+    .message {
+      margin-bottom: 16px;
+      padding: 12px 16px;
+      border-radius: 18px;
+      max-width: 85%;
+      line-height: 1.4;
+      word-wrap: break-word;
+    }
+    .user {
+      background: #4CAF50;
+      color: white;
+      margin-left: auto;
+      text-align: right;
+    }
+    .bot {
+      background: #e9ecef;
+      color: #333;
+      margin-right: auto;
+    }
+    #input-area {
+      display: flex;
+      padding: 16px;
+      background: white;
+      border-top: 1px solid #eee;
+    }
+    #user-input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 1px solid #ddd;
+      border-radius: 24px;
+      outline: none;
+      font-size: 16px;
+    }
+    #send-btn {
+      margin-left: 12px;
+      padding: 12px 24px;
+      background: #2196F3;
+      color: white;
+      border: none;
+      border-radius: 24px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    #send-btn:hover {
+      background: #1976D2;
+    }
+    .typing {
+      color: #666;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <div id="chat-container">
+    <div id="chat-messages">
+      <div class="message bot">Hi! I'm your AI assistant. Ask me anything! 💬</div>
+    </div>
+    <div id="input-area">
+      <input type="text" id="user-input" placeholder="Type your message..." autocomplete="off" />
+      <button id="send-btn">Send</button>
+    </div>
+  </div>
+
+  <script>
+    // 🔴 REPLACE THIS WITH YOUR ACTUAL WEBHOOK URL
+    const WEBHOOK_URL = 'https://bdlearnai.app.n8n.cloud/webhook/0a3c9e28-c312-46ba-9228-a9d1ff97e4af';
+
+    const chatBox = document.getElementById('chat-messages');
+    const input = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-btn');
+
+    function addMessage(text, sender) {
+      const msg = document.createElement('div');
+      msg.classList.add('message', sender);
+      msg.textContent = text;
+      chatBox.appendChild(msg);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const message = input.value.trim();
+      if (!message) return;
+
+      // Add user message
+      addMessage(message, 'user');
+      input.value = '';
+
+      // Show "typing..." indicator
+      const typingEl = document.createElement('div');
+      typingEl.classList.add('message', 'bot', 'typing');
+      typingEl.textContent = '🤖 Thinking...';
+      chatBox.appendChild(typingEl);
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      try {
+        const response = await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message })
+        });
+
+        // Remove typing indicator
+        chatBox.removeChild(typingEl);
+
+        if (!response.ok) throw new Error('Network error');
+
+        const data = await response.json();
+
+        if (data && data.reply) {
+          addMessage(data.reply, 'bot');
+        } else {
+          addMessage('Sorry, I couldn’t process that.', 'bot');
+        }
+      } catch (err) {
+        console.error('Error:', err);
+        chatBox.removeChild(typingEl);
+        addMessage('⚠️ Failed to connect to AI. Please try again.', 'bot');
+      }
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+
+    input.focus();
+  </script>
+</body>
+</html>
