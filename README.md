@@ -1,3 +1,1 @@
-# I-Ai
-
-# I am not okay , I think ....................
+This is only for post requst and get requst,, 
