@@ -1,372 +1,518 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduBuddy - AI Study Assistant</title>
-    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/feather-icons"></script>
-    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f9fafb;
-        }
-        
-        .chat-bubble {
-            animation: fadeIn 0.3s ease-out;
-        }
-        
-        .pulse {
-            animation: pulse 1.5s infinite;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-        
-        .speech-wave {
-            display: flex;
-            justify-content: center;
-            gap: 4px;
-            height: 24px;
-            align-items: flex-end;
-        }
-        
-        .speech-wave span {
-            display: block;
-            width: 4px;
-            height: 8px;
-            background-color: #3b82f6;
-            border-radius: 4px;
-            animation: speech-wave 1.2s ease-in-out infinite;
-        }
-        
-        .speech-wave span:nth-child(1) { animation-delay: 0.1s; }
-        .speech-wave span:nth-child(2) { animation-delay: 0.2s; }
-        .speech-wave span:nth-child(3) { animation-delay: 0.3s; }
-        .speech-wave span:nth-child(4) { animation-delay: 0.4s; }
-        .speech-wave span:nth-child(5) { animation-delay: 0.3s; }
-        .speech-wave span:nth-child(6) { animation-delay: 0.2s; }
-        .speech-wave span:nth-child(7) { animation-delay: 0.1s; }
-        
-        @keyframes speech-wave {
-            0% { height: 8px; }
-            50% { height: 24px; }
-            100% { height: 8px; }
-        }
-    </style>
-</head>
-<body class="min-h-screen bg-gray-50">
-    <div class="container mx-auto max-w-6xl px-4 py-8">
-        <!-- Header -->
-        <header class="flex items-center justify-between mb-8">
-            <div class="flex items-center space-x-4">
-                <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-blue-500 to-teal-400 flex items-center justify-center">
-                    <i data-feather="book-open" class="text-white"></i>
-                </div>
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-800">EduBuddy</h1>
-                    <p class="text-sm text-gray-500">AI Study Assistant</p>
-                </div>
-            </div>
-            <div class="flex items-center space-x-2">
-                <button class="p-2 rounded-full hover:bg-gray-100 transition-colors">
-                    <i data-feather="settings" class="text-gray-500"></i>
-                </button>
-                <button class="p-2 rounded-full hover:bg-gray-100 transition-colors">
-                    <i data-feather="help-circle" class="text-gray-500"></i>
-                </button>
-            </div>
-        </header>
+* { box-sizing: border-box; }
 
-        <div class="flex flex-col lg:flex-row gap-6">
-            <!-- Sidebar -->
-            <div class="lg:w-64 bg-white rounded-xl shadow-sm p-6 hidden lg:block">
-                <div class="mb-6">
-                    <h2 class="font-medium text-gray-700 mb-3">Quick Actions</h2>
-                    <ul class="space-y-2">
-                        <li>
-                            <button class="w-full text-left px-3 py-2 text-sm rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors">
-                                Ask about class schedule
-                            </button>
-                        </li>
-                        <li>
-                            <button class="w-full text-left px-3 py-2 text-sm rounded-lg bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors">
-                                Exam information
-                            </button>
-                        </li>
-                        <li>
-                            <button class="w-full text-left px-3 py-2 text-sm rounded-lg bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors">
-                                Study resources
-                            </button>
-                        </li>
-                        <li>
-                            <button class="w-full text-left px-3 py-2 text-sm rounded-lg bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors">
-                                Assignment help
-                            </button>
-                        </li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h2 class="font-medium text-gray-700 mb-3">Recent Chats</h2>
-                    <ul class="space-y-2">
-                        <li>
-                            <button class="w-full text-left px-3 py-2 text-sm rounded-lg bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors truncate">
-                                Calculus midterm prep
-                            </button>
-                        </li>
-                        <li>
-                            <button class="w-full text-left px-3 py-2 text-sm rounded-lg bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors truncate">
-                                History essay structure
-                            </button>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+:root {
+    --bg-color: #f7f7f7;
+    --sidebar-bg-color: #ffffff;
+    --main-bg-color: #ffffff;
+    --text-color: #1a1a1a;
+    --border-color: #e0e0e0;
+    --input-bg-color: #f0f2f5;
+    --input-text-color: #1a1a1a;
+    --user-message-bg-color: #007bff;
+    --user-message-text-color: #ffffff;
+    --bot-message-bg-color: #f0f2f5;
+    --button-bg-color: #007bff;
+    --button-text-color: #fff;
+    --active-chat-bg-color: #e9f5ff;
+    --hover-chat-bg-color: #f0f2f5;
+    --shadow-color: rgba(0, 0, 0, 0.05);
+}
 
-            <!-- Main Chat Area -->
-            <div class="flex-1 flex flex-col">
-                <div class="bg-white rounded-xl shadow-sm flex-1 flex flex-col overflow-hidden">
-                    <!-- Chat Header -->
-                    <div class="border-b border-gray-100 p-4 flex items-center">
-                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                            <i data-feather="message-square" class="text-blue-500"></i>
-                        </div>
-                        <div class="ml-3">
-                            <h3 class="font-medium text-gray-800">Study Assistant</h3>
-                            <div class="text-xs text-gray-500 flex items-center">
-                                <span class="w-2 h-2 rounded-full bg-green-400 mr-1"></span>
-                                Active now
-                            </div>
-                        </div>
-                    </div>
+.dark-mode {
+    --bg-color: #121212;
+    --sidebar-bg-color: #1E1E1E;
+    --main-bg-color: #1a1a1a;
+    --text-color: #E0E0E0;
+    --border-color: #2d2d2d;
+    --input-bg-color: #2d2d2d;
+    --input-text-color: #E0E0E0;
+    --user-message-bg-color: #007bff;
+    --user-message-text-color: #ffffff;
+    --bot-message-bg-color: #2d2d2d;
+    --button-bg-color: #007bff;
+    --button-text-color: #fff;
+    --active-chat-bg-color: #2a3a4d;
+    --hover-chat-bg-color: #2d2d2d;
+    --shadow-color: rgba(0, 0, 0, 0.2);
+}
 
-                    <!-- Messages -->
-                    <div class="flex-1 overflow-y-auto p-4 space-y-4" id="chat-container">
-                        <!-- AI Message -->
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                                <i data-feather="cpu" class="text-blue-500 w-4 h-4"></i>
-                            </div>
-                            <div class="ml-3">
-                                <div class="bg-blue-50 rounded-lg px-4 py-2 max-w-xs lg:max-w-md chat-bubble">
-                                    <p class="text-gray-800">Hello there! I'm EduBuddy, your AI study assistant. How can I help you today?</p>
-                                </div>
-                                <p class="text-xs text-gray-400 mt-1">Just now</p>
-                            </div>
-                        </div>
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
 
-                        <!-- User Message -->
-                        <div class="flex items-start justify-end">
-                            <div class="mr-3 text-right">
-                                <div class="bg-blue-500 rounded-lg px-4 py-2 max-w-xs lg:max-w-md chat-bubble">
-                                    <p class="text-white">When is my next calculus class?</p>
-                                </div>
-                                <p class="text-xs text-gray-400 mt-1">Just now</p>
-                            </div>
-                            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">
-                                <i data-feather="user" class="text-white w-4 h-4"></i>
-                            </div>
-                        </div>
+#app-container {
+    display: flex;
+    height: 100%;
+}
 
-                        <!-- AI Message -->
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                                <i data-feather="cpu" class="text-blue-500 w-4 h-4"></i>
-                            </div>
-                            <div class="ml-3">
-                                <div class="bg-blue-50 rounded-lg px-4 py-2 max-w-xs lg:max-w-md chat-bubble">
-                                    <p class="text-gray-800">Your next Calculus 101 class is tomorrow at 10:00 AM in Building A, Room 203.</p>
-                                    <div class="mt-2 p-2 bg-white rounded border border-gray-100">
-                                        <p class="text-xs font-medium text-gray-700 mb-1">Class Details</p>
-                                        <p class="text-xs text-gray-600">Calculus 101 with Prof. Smith</p>
-                                        <p class="text-xs text-gray-600">Mon/Wed 10:00 AM - 11:15 AM</p>
-                                    </div>
-                                </div>
-                                <p class="text-xs text-gray-400 mt-1">Just now</p>
-                            </div>
-                        </div>
-                    </div>
+#sidebar {
+    width: 280px;
+    background-color: var(--sidebar-bg-color);
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    border-right: 1px solid var(--border-color);
+    transition: margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+    margin-left: 0;
+    box-shadow: 0 0 15px var(--shadow-color);
+}
 
-                    <!-- Input Area -->
-                    <div class="border-t border-gray-100 p-4">
-                        <div class="flex items-center">
-                            <button class="p-2 rounded-full hover:bg-gray-50 transition-colors mr-2">
-                                <i data-feather="paperclip" class="text-gray-500"></i>
-                            </button>
-                            <div class="flex-1 relative">
-                                <textarea 
-                                    id="message-input"
-                                    placeholder="Ask a question about your studies..." 
-                                    rows="1"
-                                    class="w-full border border-gray-200 rounded-full px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 resize-none"
-                                    style="min-height: 48px; max-height: 120px;"
-                                ></textarea>
-                                <div class="absolute right-2 bottom-2 flex items-center space-x-1">
-                                    <button id="voice-btn" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors">
-                                        <i data-feather="mic" class="text-gray-500 w-4 h-4"></i>
-                                    </button>
-                                    <button id="send-btn" class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center hover:bg-blue-600 transition-colors">
-                                        <i data-feather="send" class="text-white w-4 h-4"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mt-2 text-xs text-gray-400 flex items-center justify-between">
-                            <span>EduBuddy may produce inaccurate information</span>
-                            <span class="font-medium">v1.0</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+#app-container.sidebar-collapsed #sidebar {
+    margin-left: -281px;
+    box-shadow: none;
+}
 
-    <!-- Voice Modal -->
-    <div id="voice-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-xl p-6 max-w-sm w-full mx-4">
-            <div class="text-center">
-                <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
-                    <div id="voice-animation" class="speech-wave">
-                        <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-                    </div>
-                </div>
-                <h3 class="font-medium text-lg text-gray-800 mb-1">Listening...</h3>
-                <p class="text-gray-500 text-sm mb-4">Speak clearly into your microphone</p>
-                <button id="stop-voice-btn" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
-                    Stop Listening
-                </button>
-            </div>
-        </div>
-    </div>
+#sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-left: 4px;
+}
 
-    <script>
-        feather.replace();
-        
-        // Auto-resize textarea
-        const textarea = document.getElementById('message-input');
-        textarea.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight) + 'px';
-        });
-        
-        // Voice button functionality
-        const voiceBtn = document.getElementById('voice-btn');
-        const voiceModal = document.getElementById('voice-modal');
-        const stopVoiceBtn = document.getElementById('stop-voice-btn');
-        
-        voiceBtn.addEventListener('click', function() {
-            voiceModal.classList.remove('hidden');
-            // Here you would add actual voice recognition logic
-        });
-        
-        stopVoiceBtn.addEventListener('click', function() {
-            voiceModal.classList.add('hidden');
-            // Here you would stop voice recognition
-        });
-        
-        // Send button functionality
-        const sendBtn = document.getElementById('send-btn');
-        const chatContainer = document.getElementById('chat-container');
-        
-        sendBtn.addEventListener('click', function() {
-            const message = textarea.value.trim();
-            if (message) {
-                // Add user message to chat
-                const userMessageHtml = `
-                    <div class="flex items-start justify-end">
-                        <div class="mr-3 text-right">
-                            <div class="bg-blue-500 rounded-lg px-4 py-2 max-w-xs lg:max-w-md chat-bubble">
-                                <p class="text-white">${message}</p>
-                            </div>
-                            <p class="text-xs text-gray-400 mt-1">Just now</p>
-                        </div>
-                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">
-                            <i data-feather="user" class="text-white w-4 h-4"></i>
-                        </div>
-                    </div>
-                `;
-                chatContainer.insertAdjacentHTML('beforeend', userMessageHtml);
-                textarea.value = '';
-                textarea.style.height = '48px';
-                
-                // Scroll to bottom
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-                
-                // Show typing indicator
-                const typingIndicator = `
-                    <div class="flex items-start">
-                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                            <i data-feather="cpu" class="text-blue-500 w-4 h-4"></i>
-                        </div>
-                        <div class="ml-3">
-                            <div class="bg-blue-50 rounded-lg px-4 py-2 w-24">
-                                <div class="flex space-x-1">
-                                    <div class="w-2 h-2 rounded-full bg-blue-300 pulse"></div>
-                                    <div class="w-2 h-2 rounded-full bg-blue-300 pulse" style="animation-delay: 0.2s"></div>
-                                    <div class="w-2 h-2 rounded-full bg-blue-300 pulse" style="animation-delay: 0.4s"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                chatContainer.insertAdjacentHTML('beforeend', typingIndicator);
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-                
-                // Simulate AI response after delay
-                setTimeout(() => {
-                    // Remove typing indicator
-                    const indicators = document.querySelectorAll('.pulse');
-                    indicators.forEach(indicator => indicator.parentElement.parentElement.parentElement.parentElement.remove());
-                    
-                    // Add AI response
-                    const aiResponses = [
-                        "I can help you with that! Your next assignment is due next Monday.",
-                        "According to your syllabus, the midterm exam is scheduled for November 15th.",
-                        "I found some great study resources for this topic. Would you like me to share them?",
-                        "Your professor's office hours are Tuesdays and Thursdays from 2-4 PM."
-                    ];
-                    const randomResponse = aiResponses[Math.floor(Math.random() * aiResponses.length)];
-                    
-                    const aiMessageHtml = `
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                                <i data-feather="cpu" class="text-blue-500 w-4 h-4"></i>
-                            </div>
-                            <div class="ml-3">
-                                <div class="bg-blue-50 rounded-lg px-4 py-2 max-w-xs lg:max-w-md chat-bubble">
-                                    <p class="text-gray-800">${randomResponse}</p>
-                                </div>
-                                <p class="text-xs text-gray-400 mt-1">Just now</p>
-                            </div>
-                        </div>
-                    `;
-                    chatContainer.insertAdjacentHTML('beforeend', aiMessageHtml);
-                    chatContainer.scrollTop = chatContainer.scrollHeight;
-                    feather.replace();
-                }, 1500);
-            }
-        });
-        
-        // Also send message on Enter key (but allow Shift+Enter for new lines)
-        textarea.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendBtn.click();
-            }
-        });
-    </script>
-</body>
-</html>
+#logo {
+    width: 36px;
+    height: 36px;
+}
+
+#sidebar-header h2 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+}
+
+#search-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background-color: var(--input-bg-color);
+    margin-bottom: 16px;
+    border: 1px solid transparent;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+#search-container:focus-within {
+    border-color: var(--button-bg-color);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+#search-history-input {
+    flex-grow: 1;
+    border: none;
+    background: none;
+    outline: none;
+    color: var(--text-color);
+    font-size: 15px;
+}
+
+#chat-history {
+    flex-grow: 1;
+    overflow-y: auto;
+    margin-right: -12px;
+    padding-right: 12px;
+}
+
+.chat-history-item {
+    padding: 14px;
+    border-radius: 12px;
+    cursor: pointer;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+    font-weight: 500;
+}
+
+.chat-history-item:hover {
+    background-color: var(--hover-chat-bg-color);
+}
+
+.chat-history-item.active-chat {
+    background-color: var(--active-chat-bg-color);
+    color: var(--button-bg-color);
+    font-weight: 600;
+}
+
+#main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--main-bg-color);
+}
+
+#chat-container {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--main-bg-color);
+    box-shadow: none;
+}
+
+.dark-mode #chat-container {
+    background: var(--main-bg-color);
+}
+
+#chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    background: var(--main-bg-color);
+    color: var(--text-color);
+    border-bottom: 1px solid var(--border-color);
+    z-index: 10;
+}
+
+#chat-header h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    flex-grow: 1;
+    text-align: center;
+}
+
+#header-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#chat-box {
+    flex-grow: 1;
+    padding: 20px 40px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+#input-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px 40px;
+    border-top: 1px solid var(--border-color);
+    gap: 10px;
+    background-color: var(--main-bg-color);
+    transition: background-color 0.3s ease;
+}
+
+#user-input {
+    width: 100%;
+    max-width: 720px;
+    border: 1px solid var(--border-color);
+    border-radius: 24px;
+    padding: 14px 24px;
+    font-size: 16px;
+    background-color: var(--input-bg-color);
+    color: var(--input-text-color);
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+#user-input:focus {
+    outline: none;
+    border-color: var(--button-bg-color);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+}
+
+.message {
+    display: flex;
+    align-items: flex-start;
+    animation: fadeIn 0.4s ease-out;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+.user-message {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.bot-message {
+    align-self: flex-start;
+}
+
+.message > div:not(.message-avatar) {
+    padding: 10px 16px;
+    border-radius: 20px;
+    max-width: 55ch;
+}
+
+.user-message > div {
+    background-color: var(--user-message-bg-color);
+    color: var(--user-message-text-color);
+    border-bottom-right-radius: 4px;
+}
+
+.bot-message > div {
+    background-color: var(--bot-message-bg-color);
+    color: var(--text-color);
+    border-bottom-left-radius: 4px;
+}
+
+.message-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    margin: 0 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.user-message .message-avatar {
+    background-color: #007bff;
+}
+
+.bot-message .message-avatar {
+    background-color: #6c757d;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 5px;
+    border: 3px solid var(--sidebar-bg-color);
+}
+
+.dark-mode ::-webkit-scrollbar-thumb {
+    background: #444;
+    border-color: var(--sidebar-bg-color);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #aaa;
+}
+
+.dark-mode ::-webkit-scrollbar-thumb:hover {
+    background: #666;
+}
+
+.pinned-message {
+    background-color: #e9f5ff;
+    border: 1px solid #b3d9ff;
+    border-radius: 12px;
+    padding: 10px 16px;
+    margin-bottom: 15px;
+    text-align: center;
+    font-weight: 500;
+    color: #0056b3;
+}
+
+.dark-mode .pinned-message {
+    background-color: #2a394d;
+    border-color: #3a536e;
+    color: #aaccff;
+}
+
+/* --- Modern Button Styles --- */
+.pro-button {
+    padding: 10px 15px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.pro-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+.pro-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Primary Action Button (Send) */
+.pro-button.primary {
+    background-color: var(--button-bg-color);
+    color: var(--button-text-color);
+}
+.pro-button.primary:hover {
+    background-color: #0069d9;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+}
+
+/* Secondary/Utility Button (New Chat) */
+.pro-button.secondary {
+    background-color: var(--active-chat-bg-color);
+    color: var(--button-bg-color);
+    width: 100%;
+    margin-bottom: 16px;
+    border: 1px solid var(--button-bg-color);
+}
+.pro-button.secondary:hover {
+    background-color: var(--button-bg-color);
+    color: var(--button-text-color);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+}
+.dark-mode .pro-button.secondary {
+    background-color: var(--active-chat-bg-color);
+    color: var(--button-bg-color);
+    border-color: var(--button-bg-color);
+}
+.dark-mode .pro-button.secondary:hover {
+    background-color: var(--button-bg-color);
+    color: var(--button-text-color);
+}
+
+/* Tertiary/Ghost Button (Clear Chat, Theme Toggle) */
+.pro-button.ghost {
+    background-color: transparent;
+    border-color: var(--border-color);
+    color: var(--text-color);
+}
+.pro-button.ghost:hover {
+    background-color: var(--hover-chat-bg-color);
+    border-color: var(--text-color);
+}
+
+/* Destructive Button (Delete All History) */
+.pro-button.destructive {
+    background-color: transparent;
+    color: #f44336;
+    width: 100%;
+    margin-top: auto; /* Pushes to the bottom */
+    padding-top: 16px;
+}
+.pro-button.destructive:hover {
+    background-color: #f44336;
+    color: white;
+    box-shadow: 0 4px 12px rgba(244, 67, 54, 0.2);
+}
+
+/* Icon-Only Modifier */
+.pro-button.icon-only {
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border-radius: 50%;
+}
+
+.pro-button.icon-only.small {
+    width: 34px;
+    height: 34px;
+}
+
+.pro-button.icon-only.small .material-icons {
+
+    font-size: 20px;
+
+}
+
+
+
+/* Typing Indicator */
+
+#typing-indicator > div {
+
+    display: flex;
+
+    align-items: center;
+
+    padding: 10px 16px;
+
+    background-color: var(--bot-message-bg-color);
+
+    border-radius: 20px;
+
+    border-bottom-left-radius: 4px;
+
+}
+
+
+
+.typing-dot {
+
+    width: 8px;
+
+    height: 8px;
+
+    margin: 0 2px;
+
+    background-color: var(--text-color);
+
+    border-radius: 50%;
+
+    animation: typing 1.4s infinite;
+
+}
+
+
+
+.typing-dot:nth-child(2) {
+
+    animation-delay: 0.2s;
+
+}
+
+
+
+.typing-dot:nth-child(3) {
+
+    animation-delay: 0.4s;
+
+}
+
+
+
+@keyframes typing {
+
+    0%, 80%, 100% {
+
+        transform: scale(0);
+
+    }
+
+    40% {
+
+        transform: scale(1.0);
+
+    }
+
+}
