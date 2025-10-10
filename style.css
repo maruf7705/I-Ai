@@ -19,6 +19,7 @@
   --shadow-color: rgba(0, 0, 0, 0.05);
   --destructive-color: #f44336;
   --destructive-hover-color: #d32f2f;
+  --transition-main: 220ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .dark-mode {
@@ -44,6 +45,7 @@ body {
   height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color var(--transition-main), color var(--transition-main);
 }
 
 #app-container {
@@ -58,8 +60,7 @@ body {
   flex-direction: column;
   padding: 24px;
   border-right: 1px solid var(--border-color);
-  transition: margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.3s ease;
+  transition: margin-left 350ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow var(--transition-main), background-color var(--transition-main), border-color var(--transition-main);
   margin-left: 0;
   box-shadow: 0 0 15px var(--shadow-color);
 }
@@ -80,6 +81,11 @@ body {
 #logo {
   width: 36px;
   height: 36px;
+  transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#logo:hover {
+    transform: rotate(15deg) scale(1.1);
 }
 
 #sidebar-header h2 {
@@ -97,7 +103,7 @@ body {
   background-color: var(--input-bg-color);
   margin-bottom: 16px;
   border: 1px solid transparent;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  transition: border-color var(--transition-main), box-shadow var(--transition-main), background-color var(--transition-main);
 }
 
 #search-container:focus-within {
@@ -129,18 +135,21 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+  transition: background-color 150ms ease-in-out, color 150ms ease-in-out, transform 150ms ease-in-out, font-weight 150ms ease-in-out;
   font-weight: 500;
+  will-change: transform;
 }
 
 .chat-history-item:hover {
   background-color: var(--hover-chat-bg-color);
+  transform: scale(1.02);
 }
 
 .chat-history-item.active-chat {
   background-color: var(--active-chat-bg-color);
   color: var(--button-bg-color);
   font-weight: 600;
+  transform: scale(1.03);
 }
 
 #main-content {
@@ -148,6 +157,7 @@ body {
   display: flex;
   flex-direction: column;
   background-color: var(--main-bg-color);
+  transition: background-color var(--transition-main);
 }
 
 #chat-container {
@@ -172,6 +182,7 @@ body {
       transparent
     );
   background-size: 48px 48px, 48px 48px, 100% 100%, 100% 100%;
+  transition: background-image 1s ease, background-color var(--transition-main);
 }
 
 .dark-mode #chat-container {
@@ -193,6 +204,7 @@ body {
   color: var(--text-color);
   border-bottom: 1px solid var(--border-color);
   z-index: 10;
+  transition: background-color var(--transition-main), border-color var(--transition-main);
 }
 
 #chat-header h2 {
@@ -229,7 +241,7 @@ body {
   border-top: 1px solid var(--border-color);
   gap: 10px;
   background-color: var(--main-bg-color);
-  transition: background-color 0.3s ease;
+  transition: background-color var(--transition-main), border-color var(--transition-main);
 }
 
 .dark-mode #input-container {
@@ -245,7 +257,7 @@ body {
   font-size: 16px;
   background-color: var(--input-bg-color);
   color: var(--input-text-color);
-  transition: border-color 0.3s, box-shadow 0.3s;
+  transition: border-color var(--transition-main), box-shadow var(--transition-main), background-color var(--transition-main);
 }
 
 #user-input:focus {
@@ -257,10 +269,11 @@ body {
 .message {
   display: flex;
   align-items: flex-start;
-  animation: fadeIn 0.4s ease-out;
+  animation: fadeInUp 400ms var(--transition-main) both;
   font-size: 16px;
   line-height: 1.5;
   position: relative;
+  will-change: opacity, transform;
 }
 
 .user-message {
@@ -301,14 +314,25 @@ body {
   font-size: 20px;
   color: #fff;
   flex-shrink: 0;
+  transition: transform 300ms ease;
+}
+
+.message:hover .message-avatar {
+    transform: scale(1.1);
 }
 
 .user-message .message-avatar {
-  background-color: #007bff;
+  background-color: var(--button-bg-color);
+  color: var(--button-text-color);
 }
 
 .bot-message .message-avatar {
-  background-color: #8e44ad;
+  background-color: transparent;
+  border: 2px solid var(--button-bg-color);
+}
+
+.bot-message .message-avatar .material-icons {
+    color: var(--button-bg-color);
 }
 
 .message-timestamp {
@@ -332,10 +356,10 @@ body {
     background-color: #222;
 }
 
-@keyframes fadeIn {
+@keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(15px);
   }
   to {
     opacity: 1;
@@ -356,6 +380,7 @@ body {
   background: #ccc;
   border-radius: 5px;
   border: 3px solid var(--sidebar-bg-color);
+  transition: background-color var(--transition-main);
 }
 
 .dark-mode ::-webkit-scrollbar-thumb {
@@ -380,6 +405,7 @@ body {
   text-align: center;
   font-weight: 500;
   color: #0056b3;
+  transition: background-color var(--transition-main), border-color var(--transition-main), color var(--transition-main);
 }
 
 .dark-mode .pinned-message {
@@ -394,7 +420,7 @@ body {
   border: 1px solid transparent;
   border-radius: 10px;
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
+  transition: all 200ms ease-in-out;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -402,11 +428,12 @@ body {
   font-size: 15px;
   font-weight: 600;
   text-decoration: none;
+  will-change: transform, box-shadow;
 }
 
 .pro-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
 }
 
 .pro-button:active {
@@ -421,7 +448,7 @@ body {
 }
 .pro-button.primary:hover {
   background-color: #0069d9;
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+  box-shadow: 0 7px 14px rgba(0, 123, 255, 0.25);
 }
 
 /* Secondary/Utility Button (New Chat) */
@@ -435,7 +462,7 @@ body {
 .pro-button.secondary:hover {
   background-color: var(--button-bg-color);
   color: var(--button-text-color);
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+  box-shadow: 0 7px 14px rgba(0, 123, 255, 0.18);
 }
 .dark-mode .pro-button.secondary {
   background-color: var(--active-chat-bg-color);
@@ -456,6 +483,7 @@ body {
 .pro-button.ghost:hover {
   background-color: var(--hover-chat-bg-color);
   border-color: var(--text-color);
+  transform: translateY(-2px) scale(1.05);
 }
 
 /* Destructive Button (Delete All History) */
@@ -469,7 +497,7 @@ body {
 .pro-button.destructive:hover {
   background-color: var(--destructive-color);
   color: white;
-  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.2);
+  box-shadow: 0 7px 14px rgba(244, 67, 54, 0.25);
 }
 
 /* Icon-Only Modifier */
@@ -520,4 +548,80 @@ body {
     40% {
         transform: scale(1);
     }
+}
+
+/* --- Modal Styles --- */
+#modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 250ms ease-in-out;
+}
+
+#modal-backdrop:not(.hidden) {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#modal-container {
+  background-color: var(--sidebar-bg-color);
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  width: 100%;
+  max-width: 400px;
+  transform: scale(0.95);
+  transition: transform 250ms ease-in-out, background-color var(--transition-main);
+  text-align: center;
+}
+
+#modal-backdrop:not(.hidden) #modal-container {
+    transform: scale(1);
+}
+
+#modal-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 8px;
+    color: var(--text-color);
+}
+
+#modal-text {
+    font-size: 16px;
+    color: var(--text-color);
+    margin-bottom: 24px;
+}
+
+#modal-input-container {
+    margin-bottom: 24px;
+}
+
+#modal-input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: var(--input-bg-color);
+    color: var(--text-color);
+    font-size: 16px;
+}
+
+#modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.hidden {
+  display: none !important;
 }
