@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Webhook URL
-    const webhookUrl = 'https://fahimislam997078.app.n8n.cloud/webhook/14833ee0-d754-4f1d-a4ce-a0644181e4fc/chat';
+    const webhookUrl = 'https://fahimislam997078.app.n8n.cloud/webhook/8cbd143e-87c9-44ad-b499-f0c9ed6c26cf/chat';
 
     // App State
     let conversations = [];
