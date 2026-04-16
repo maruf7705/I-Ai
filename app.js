@@ -11,6 +11,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const deleteAllHistoryButton = document.getElementById('delete-all-history-button');
     const menuButton = document.getElementById('menu-button');
     const appContainer = document.getElementById('app-container');
+    const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+    const welcomeScreen = document.getElementById('welcome-screen');
+    const chatTitle = document.getElementById('chat-title');
+    const promptChips = document.querySelectorAll('.chip');
 
     // --- Modal Elements ---
     const modal = {
@@ -25,11 +29,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Webhook URL
-    const webhookUrl = 'https://fahimislam997078.app.n8n.cloud/webhook/8cbd143e-87c9-44ad-b499-f0c9ed6c26cf/chat';
+    const webhookUrl = 'https://sadikco97.app.n8n.cloud/webhook/polyconnect';
 
     // App State
     let conversations = [];
     let activeConversationId = null;
+    let isProcessing = false;
 
     // --- Modal Utility ---
     const Modal = {
@@ -65,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
 
                 if (options.prompt) {
-                    modal.input.focus();
+                    setTimeout(() => modal.input.focus(), 100);
                 }
             });
         },
@@ -79,13 +84,15 @@ document.addEventListener('DOMContentLoaded', () => {
         attachEventListeners();
         loadConversations();
         loadTheme();
-        initializePinnedMessageFeature();
+        autoResizeTextarea();
+        updateWelcomeScreen();
     }
 
     function attachEventListeners() {
         sendButton.addEventListener('click', sendMessage);
-        userInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
                 sendMessage();
             }
         });
@@ -95,27 +102,108 @@ document.addEventListener('DOMContentLoaded', () => {
         searchHistoryInput.addEventListener('input', filterChatHistory);
         deleteAllHistoryButton.addEventListener('click', deleteAllChatHistory);
         menuButton.addEventListener('click', toggleSidebar);
+
+        // Sidebar backdrop click to close (mobile)
+        if (sidebarBackdrop) {
+            sidebarBackdrop.addEventListener('click', () => {
+                appContainer.classList.add('sidebar-collapsed');
+            });
+        }
+
+        // Prompt chips
+        promptChips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                const prompt = chip.getAttribute('data-prompt');
+                if (prompt) {
+                    userInput.value = prompt;
+                    autoResizeTextarea();
+                    sendMessage();
+                }
+            });
+        });
+
+        // Keyboard shortcut: Ctrl+K to focus search
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                if (appContainer.classList.contains('sidebar-collapsed')) {
+                    toggleSidebar();
+                }
+                searchHistoryInput.focus();
+            }
+        });
+    }
+
+    function autoResizeTextarea() {
+        userInput.addEventListener('input', () => {
+            userInput.style.height = 'auto';
+            userInput.style.height = Math.min(userInput.scrollHeight, 160) + 'px';
+        });
     }
 
     function loadTheme() {
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme === 'dark') {
             document.body.classList.add('dark-mode');
+            updateThemeIcon();
+        }
+    }
+
+    function updateThemeIcon() {
+        const icon = themeToggleButton.querySelector('.material-icons');
+        if (document.body.classList.contains('dark-mode')) {
+            icon.textContent = 'light_mode';
+        } else {
+            icon.textContent = 'brightness_4';
+        }
+    }
+
+    // --- Welcome Screen ---
+    function updateWelcomeScreen() {
+        const conversation = conversations.find(c => c.id === activeConversationId);
+        const hasMessages = conversation && conversation.messages.length > 0;
+
+        if (hasMessages) {
+            welcomeScreen.classList.add('hidden');
+            chatBox.style.display = '';
+        } else if (!activeConversationId || !hasMessages) {
+            welcomeScreen.classList.remove('hidden');
+            chatBox.style.display = 'none';
+        }
+    }
+
+    // --- Dynamic Title ---
+    function updateChatTitle() {
+        const conversation = conversations.find(c => c.id === activeConversationId);
+        if (conversation) {
+            const title = conversation.title ||
+                (conversation.messages.length > 0
+                    ? conversation.messages[0].message.substring(0, 40) + (conversation.messages[0].message.length > 40 ? '…' : '')
+                    : 'New Chat');
+            chatTitle.textContent = title;
+        } else {
+            chatTitle.textContent = 'BTEB Student Help';
         }
     }
 
     // --- Core Chat Functions ---
     function sendMessage() {
-        const message = userInput.value;
-        if (message.trim() === '') return;
+        const message = userInput.value.trim();
+        if (message === '' || isProcessing) return;
 
         if (!activeConversationId) {
             createNewChat();
         }
 
+        // Show chat box, hide welcome
+        welcomeScreen.classList.add('hidden');
+        chatBox.style.display = '';
+
         appendMessage(message, 'user', new Date());
         saveMessageToHistory(message, 'user');
         userInput.value = '';
+        userInput.style.height = 'auto';
+        setProcessing(true);
         showLoadingIndicator();
 
         fetch(webhookUrl, {
@@ -128,37 +216,62 @@ document.addEventListener('DOMContentLoaded', () => {
                 "sessionId": activeConversationId
             })
         })
-        .then(response => response.json())
-        .then(data => {
-            hideLoadingIndicator();
-            if (data && data.output) {
-                appendMessage(data.output, 'bot', new Date());
-                saveMessageToHistory(data.output, 'bot');
-            }
-        })
-        .catch(error => {
-            hideLoadingIndicator();
-            console.error('Error:', error);
-            appendMessage('Sorry, something went wrong.', 'bot', new Date());
-            saveMessageToHistory('Sorry, something went wrong.', 'bot');
-        });
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                hideLoadingIndicator();
+                setProcessing(false);
+                // n8n returns { reply: "..." } — support both reply and output
+                const botReply = data?.reply || data?.output || data?.text || data?.message;
+                if (botReply) {
+                    appendMessage(botReply, 'bot', new Date());
+                    saveMessageToHistory(botReply, 'bot');
+                } else {
+                    console.warn('Unexpected response format:', data);
+                    appendMessage('Received a response but could not parse it.', 'bot', new Date(), true);
+                }
+            })
+            .catch(error => {
+                hideLoadingIndicator();
+                setProcessing(false);
+                console.error('Error:', error);
+                appendMessage('Something went wrong. Please try again.', 'bot', new Date(), true);
+                saveMessageToHistory('Something went wrong. Please try again.', 'bot');
+            });
     }
 
-    function appendMessage(message, sender, timestamp) {
+    function setProcessing(state) {
+        isProcessing = state;
+        sendButton.disabled = state;
+        if (state) {
+            sendButton.classList.add('loading');
+        } else {
+            sendButton.classList.remove('loading');
+        }
+    }
+
+    function appendMessage(message, sender, timestamp, isError = false) {
         const messageElement = document.createElement('div');
         messageElement.classList.add('message', sender + '-message');
+        if (isError) {
+            messageElement.classList.add('error-message');
+        }
 
         const avatarElement = document.createElement('div');
         avatarElement.classList.add('message-avatar');
         const icon = document.createElement('i');
         icon.classList.add('material-icons');
-        icon.textContent = (sender === 'user') ? 'person' : 'smart_toy';
+        icon.textContent = (sender === 'user') ? 'person' : (isError ? 'error_outline' : 'smart_toy');
+        icon.setAttribute('aria-hidden', 'true');
         avatarElement.appendChild(icon);
 
         const messageContent = document.createElement('div');
+        messageContent.classList.add('message-content');
 
         const messageTextElement = document.createElement('div');
-        messageTextElement.innerHTML = (sender === 'bot') ? marked.parse(message) : message;
+        messageTextElement.innerHTML = (sender === 'bot') ? marked.parse(message) : escapeHtml(message);
 
         if (sender === 'user') {
             messageTextElement.addEventListener('dblclick', async () => {
@@ -169,18 +282,21 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        const timestampElement = document.createElement('div');
-        timestampElement.classList.add('message-timestamp');
-        timestampElement.textContent = new Date(timestamp).toLocaleTimeString();
-
         messageContent.appendChild(messageTextElement);
-        messageContent.appendChild(timestampElement);
 
         messageElement.appendChild(avatarElement);
         messageElement.appendChild(messageContent);
 
         chatBox.appendChild(messageElement);
         chatBox.scrollTop = chatBox.scrollHeight;
+
+        updateChatTitle();
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
     // --- Conversation Management ---
@@ -214,6 +330,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 appendMessage(item.message, item.sender, item.timestamp);
             });
             updateChatHistoryUI();
+            updateWelcomeScreen();
+            updateChatTitle();
+
+            // Close sidebar on mobile after selecting a chat
+            if (window.innerWidth <= 768) {
+                appContainer.classList.add('sidebar-collapsed');
+            }
         }
     }
 
@@ -224,6 +347,13 @@ document.addEventListener('DOMContentLoaded', () => {
         chatBox.innerHTML = '';
         localStorage.setItem('conversations', JSON.stringify(conversations));
         updateChatHistoryUI();
+        updateWelcomeScreen();
+        updateChatTitle();
+
+        // Close sidebar on mobile
+        if (window.innerWidth <= 768) {
+            appContainer.classList.add('sidebar-collapsed');
+        }
     }
 
     function clearCurrentChat() {
@@ -233,23 +363,42 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('conversations', JSON.stringify(conversations));
             chatBox.innerHTML = '';
             updateChatHistoryUI();
+            updateWelcomeScreen();
+            updateChatTitle();
         }
     }
 
     function updateChatHistoryUI() {
         chatHistoryContainer.innerHTML = '';
+
+        if (conversations.length === 0) {
+            // Empty state
+            const emptyState = document.createElement('div');
+            emptyState.classList.add('history-empty-state');
+            emptyState.innerHTML = `
+                <i class="material-icons" aria-hidden="true">chat_bubble_outline</i>
+                <p>No chats yet.<br>Start a new conversation!</p>
+            `;
+            chatHistoryContainer.appendChild(emptyState);
+            return;
+        }
+
         conversations.forEach(conversation => {
             const historyItem = document.createElement('div');
             historyItem.classList.add('chat-history-item');
+            historyItem.setAttribute('role', 'listitem');
             if (conversation.id === activeConversationId) {
                 historyItem.classList.add('active-chat');
             }
 
             const textSpan = document.createElement('span');
             const conversationTitle = conversation.title || (conversation.messages.length > 0 ? conversation.messages[0].message : 'New Chat');
-            textSpan.textContent = conversationTitle.substring(0, 20) + (conversationTitle.length > 20 ? '...' : '');
+            textSpan.textContent = conversationTitle.substring(0, 25) + (conversationTitle.length > 25 ? '…' : '');
             textSpan.style.flexGrow = '1';
             textSpan.style.cursor = 'pointer';
+            textSpan.style.overflow = 'hidden';
+            textSpan.style.textOverflow = 'ellipsis';
+            textSpan.style.whiteSpace = 'nowrap';
             textSpan.addEventListener('click', () => loadConversation(conversation.id));
 
             textSpan.addEventListener('dblclick', async () => {
@@ -261,10 +410,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const deleteButton = document.createElement('button');
             deleteButton.classList.add('pro-button', 'ghost', 'icon-only', 'small');
-            
+            deleteButton.setAttribute('aria-label', 'Delete this chat');
+
             const deleteIcon = document.createElement('i');
             deleteIcon.classList.add('material-icons');
             deleteIcon.textContent = 'delete';
+            deleteIcon.setAttribute('aria-hidden', 'true');
             deleteButton.appendChild(deleteIcon);
 
             deleteButton.addEventListener('click', (event) => {
@@ -286,6 +437,8 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.removeItem('conversations');
             chatBox.innerHTML = '';
             updateChatHistoryUI();
+            updateWelcomeScreen();
+            updateChatTitle();
         }
     }
 
@@ -294,7 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!confirmed) return;
 
         const wasActive = conversationId === activeConversationId;
-        
+
         conversations = conversations.filter(c => c.id !== conversationId);
         localStorage.setItem('conversations', JSON.stringify(conversations));
 
@@ -302,10 +455,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (conversations.length > 0) {
                 loadConversation(conversations[conversations.length - 1].id);
             } else {
-                createNewChat();
+                activeConversationId = null;
+                chatBox.innerHTML = '';
+                updateWelcomeScreen();
+                updateChatTitle();
             }
         }
-        
+
         updateChatHistoryUI();
     }
 
@@ -327,6 +483,7 @@ document.addEventListener('DOMContentLoaded', () => {
             conversation.title = newTitle;
             localStorage.setItem('conversations', JSON.stringify(conversations));
             updateChatHistoryUI();
+            updateChatTitle();
         }
     }
 
@@ -335,6 +492,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.classList.toggle('dark-mode');
         const theme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
         localStorage.setItem('theme', theme);
+        updateThemeIcon();
     }
 
     function filterChatHistory() {
@@ -359,6 +517,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const icon = document.createElement('i');
         icon.classList.add('material-icons');
         icon.textContent = 'smart_toy';
+        icon.setAttribute('aria-hidden', 'true');
         avatarElement.appendChild(icon);
 
         const typingIndicator = document.createElement('div');
@@ -380,11 +539,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (loadingIndicator) {
             loadingIndicator.remove();
         }
-    }
-
-    // --- Pinned Message Feature (Refactored) ---
-    function initializePinnedMessageFeature() {
-        // This feature is not fully implemented in the HTML, so we'll avoid errors.
     }
 
     // --- Run App ---

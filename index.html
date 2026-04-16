@@ -1,14 +1,23 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Polyconnect</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polyconnect — BTEB AI Assistant</title>
+    <meta name="description" content="Polyconnect — Your AI-powered assistant for BTEB polytechnic studies. Get instant help with courses, exams, and more.">
+    <meta property="og:title" content="Polyconnect — BTEB AI Assistant">
+    <meta property="og:description" content="AI-powered assistant for BTEB polytechnic students.">
+    <link rel="icon" href="logo.png" type="image/png">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
-<body> <div class="conrol"><h1>Maruf Islam - Polyconnect</h1></div>
+<body>
     <div id="app-container" class="sidebar-collapsed">
+        <!-- Sidebar Backdrop (mobile overlay) -->
+        <div id="sidebar-backdrop"></div>
+
         <div id="sidebar">
             <div id="sidebar-header">
                 <img src="logo.png" alt="Polyconnect Logo" id="logo">
@@ -16,55 +25,74 @@
             </div>
             <div id="search-container">
                 <i class="material-icons">search</i>
-                <input type="text" id="search-history-input" placeholder="Search history...">
+                <input type="text" id="search-history-input" placeholder="Search history..." aria-label="Search chat history">
             </div>
-            <div id="new-chat-button" class="pro-button secondary">
+            <div id="new-chat-button" class="pro-button secondary" role="button" tabindex="0" aria-label="Start a new chat">
                 <i class="material-icons">add</i>
                 <span>New Chat</span>
             </div>
-            <div id="chat-history">
+            <div id="chat-history" role="list" aria-label="Chat history">
                 <!-- Chat history items will be dynamically added here -->
             </div>
-            <button id="delete-all-history-button" class="pro-button destructive">
+            <button id="delete-all-history-button" class="pro-button destructive" aria-label="Delete all chat history">
                     <i class="material-icons">delete_forever</i>
                     <span>Delete All History</span>
             </button>
         </div>
+
         <div id="main-content">
             <div id="chat-container">
                 <div id="chat-header">
-                    <button id="menu-button" class="pro-button ghost icon-only">
+                    <button id="menu-button" class="pro-button ghost icon-only" aria-label="Toggle sidebar">
                         <i class="material-icons">menu</i>
                     </button>
-                    <h2>BTEB Student Help </h2>
+                    <h1 id="chat-title">BTEB Student Help</h1>
                     <div id="header-buttons">
-                        <button id="clear-chat-button" class="pro-button ghost">Clear Chat</button>
-                        <button id="theme-toggle-button" class="pro-button ghost icon-only">
+                        <button id="clear-chat-button" class="pro-button ghost" aria-label="Clear current chat">Clear</button>
+                        <button id="theme-toggle-button" class="pro-button ghost icon-only" aria-label="Toggle dark mode">
                             <i class="material-icons">brightness_4</i>
                         </button>
                     </div>
                 </div>
-                <div id="chat-box">
-                    <div class="pinned-message">
-                        BTEB AI for Stduent
+
+                <!-- Welcome / Empty State -->
+                <div id="welcome-screen">
+                    <div class="welcome-inner">
+                        <img src="logo.png" alt="Polyconnect" class="welcome-logo">
+                        <h2>Welcome to Polyconnect</h2>
+                        <p>Your AI-powered BTEB study assistant. Ask me anything about your courses, exams, or projects.</p>
+                        <div class="prompt-chips">
+                            <button class="chip" data-prompt="Explain Ohm's Law simply">⚡ Explain Ohm's Law</button>
+                            <button class="chip" data-prompt="Help me with a math problem">📐 Math Help</button>
+                            <button class="chip" data-prompt="What topics are in the BTEB syllabus?">📚 BTEB Syllabus</button>
+                            <button class="chip" data-prompt="Write a lab report for me">🧪 Lab Report</button>
+                        </div>
                     </div>
                 </div>
+
+                <div id="chat-box" role="log" aria-live="polite" aria-label="Chat messages">
+                    <!-- Messages rendered here -->
+                </div>
+
                 <div id="input-container">
-                    <input type="text" id="user-input" placeholder="Type your message...">
-                    <button id="send-button" class="pro-button primary icon-only">
-                        <i class="material-icons">send</i>
-                    </button>
+                    <div class="input-wrapper">
+                        <textarea id="user-input" placeholder="Type your message..." rows="1" aria-label="Message input"></textarea>
+                        <button id="send-button" class="pro-button primary icon-only" aria-label="Send message">
+                            <i class="material-icons">send</i>
+                        </button>
+                    </div>
+                    <span class="input-hint">Press Enter to send · Shift+Enter for new line</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="modal-backdrop" class="hidden">
+    <div id="modal-backdrop" class="hidden" role="dialog" aria-modal="true">
         <div id="modal-container">
             <h3 id="modal-title">Modal Title</h3>
             <p id="modal-text">Modal message goes here.</p>
             <div id="modal-input-container" class="hidden">
-                <input type="text" id="modal-input" />
+                <input type="text" id="modal-input" aria-label="Modal input" />
             </div>
             <div id="modal-buttons">
                 <button id="modal-cancel-button" class="pro-button ghost">Cancel</button>
