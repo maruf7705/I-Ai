@@ -1,0 +1,382 @@
+{
+    "nodes": [
+        {
+            "parameters": {
+                "promptType": "define",
+                "text": "={{ $json.body.chatInput }}",
+                "options": {
+                    "systemMessage": "=# Identity\nYou are BTEB Student Assistant.  \nYour job is to help Polytechnic students in Bangladesh with BTEB-related notices, exams, holidays, results, subjects, routines, book lists, and seat plans.  \nAlways reply in Bangla (plain text, no markdown).  \n\n# Instructions\n1. সর্বদা ছাত্রের input ({{ $json.body.message }}) বিশ্লেষণ করো।  \n2. প্রথমে database থেকে উত্তর খুঁজে বের করার চেষ্টা করো।  \n3. যদি data না পাও, polite fallback response দাও (যেমন: \"এই তথ্য এখন আমার ডাটাবেজে নেই।\").  \n4. যদি input অসম্পূর্ণ হয়, তবে politely minimum তথ্য জিজ্ঞেস করো।  \n5. উত্তর ছোট, পরিষ্কার এবং student-friendly হবে।  \n\n# Tools (Database Sources)\n1. Holiday_Data  \n   Purpose: Provide BTEB holiday data.  \n   Input: তারিখ (today/tomorrow বা নির্দিষ্ট তারিখ)।  \n\n2. Exam_Data  \n   Purpose: Provide exam dates, exam names, এবং exam routine।  \n   Input: Semester + Exam type (Midterm/Final/Board ইত্যাদি)।  \n\n3. Result_Data  \n   Purpose: Provide student result by semester & roll number।  \n   Input: Semester + Roll number।  \n\n4. Subject_Every_Semester  \n   Purpose: Provide subject list by semester।  \n\n5. Notice_Box  \n   Purpose: Provide latest student notices।  \n\n6. Book_List_Data  \n   Purpose: Provide official book list by semester।  \n   Input: Semester (1st, 2nd, 3rd … 7th)।  \n\n7. Seat_Plan_Data  \n   Purpose: Provide exam seat plan by roll number।  \n   Input: Roll number।  \n\n# Special Rules\n- যদি user holiday জানতে চায় (যেমন: \"কালকে কি campus khola?\")  \n  → Holiday_Data check করো।  \n  → যদি holiday থাকে: holiday নাম + কয়দিন বন্ধ থাকবে বলো।  \n  → না থাকলে বলো \"কালকে ক্যাম্পাস খোলা থাকবে।\"  \n\n- যদি user result জানতে চায় (যেমন: \"ami result dekhte cai\")  \n  → প্রথমে semester চাও, তারপর roll চাও।  \n  → Result_Data থেকে result বের করে দেখাও।  \n\n- যদি user exam date জানতে চায় (যেমন: \"amader next exam kobe?\")  \n  → প্রথমে semester চাও।  \n  → Exam_Data থেকে next exam date এবং exam name দাও।  \n\n- যদি user exam routine জানতে চায় (যেমন: \"exam routine dekhte cai\")  \n  → প্রথমে semester এবং exam type (mid/final) চাও।  \n  → Exam_Data থেকে routine দেখাও।  \n\n- যদি user শুধু semester input করে (যেমন: \"2nd\", \"3rd\")  \n  → তখন Result_Data + Exam_Data + Notice_Box থেকে সেই semester-এর তথ্য দাও।  \n\n- যদি user book list জানতে চায় (যেমন: \"1st semester book list\", \"2nd semester book list\")  \n  → সরাসরি Book_List_Data থেকে ঐ semester-এর official পূর্ণ book list দেখাও।  \n  → কোনো অতিরিক্ত প্রশ্ন করবে না।  \n  → উত্তর দাও student-friendly ফরম্যাটে, যেমন:  \n     \"1st Semester Book List:  \n      1. Mathematics-1  \n      2. Physics-1  \n      3. English-1  \n      4. Engineering Drawing  \n      … ইত্যাদি\"  \n\n- যদি user seat plan জানতে চায় (যেমন: \"roll 872250 seat plan\")  \n  → সরাসরি Seat_Plan_Data থেকে ঐ roll number-এর তথ্য দেখাও।  \n  → কোনো অতিরিক্ত প্রশ্ন করবে না।  \n  → উত্তর দাও student-friendly ফরম্যাটে, যেমন:  \n     \"আপনার Seat Plan:  \n      Room No: 204  \n      Serial No: 36\"\n\n\n#Final Note\nPresent time {{ $now }}\n"
+                }
+            },
+            "type": "@n8n/n8n-nodes-langchain.agent",
+            "typeVersion": 2.2,
+            "position": [
+                -1120,
+                912
+            ],
+            "id": "17d7afbb-0c0e-47bd-9653-e7a1dc26a933",
+            "name": "AI Agent"
+        },
+        {
+            "parameters": {
+                "documentId": {
+                    "__rl": true,
+                    "value": "1X2eoSiQp6Pn1yH1K5yk-omtE_waciNcAUBO8a6TZBEI",
+                    "mode": "list",
+                    "cachedResultName": "Notice_Data2",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1X2eoSiQp6Pn1yH1K5yk-omtE_waciNcAUBO8a6TZBEI/edit?usp=drivesdk"
+                },
+                "sheetName": {
+                    "__rl": true,
+                    "value": "gid=0",
+                    "mode": "list",
+                    "cachedResultName": "Sheet1",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1X2eoSiQp6Pn1yH1K5yk-omtE_waciNcAUBO8a6TZBEI/edit#gid=0"
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.googleSheetsTool",
+            "typeVersion": 4.7,
+            "position": [
+                -976,
+                1328
+            ],
+            "id": "992c9ace-d943-4327-8033-40ddbc379b71",
+            "name": "Holyday_Data",
+            "credentials": {
+                "googleSheetsOAuth2Api": {
+                    "id": "Kyht9IVH9QrjEzCG",
+                    "name": "Google Sheets OAuth2 API"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "documentId": {
+                    "__rl": true,
+                    "value": "1z1Qs7BdsqM2DckTu2I2F4bzSwiZ0xX3sLZTSTqg6WQA",
+                    "mode": "list",
+                    "cachedResultName": "Subject_Every_Semester",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1z1Qs7BdsqM2DckTu2I2F4bzSwiZ0xX3sLZTSTqg6WQA/edit?usp=drivesdk"
+                },
+                "sheetName": {
+                    "__rl": true,
+                    "value": "gid=0",
+                    "mode": "list",
+                    "cachedResultName": "Sheet1",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1z1Qs7BdsqM2DckTu2I2F4bzSwiZ0xX3sLZTSTqg6WQA/edit#gid=0"
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.googleSheetsTool",
+            "typeVersion": 4.7,
+            "position": [
+                -688,
+                1312
+            ],
+            "id": "6874951c-70b4-41f4-852e-9f9445ee211c",
+            "name": "Subject_Every_Semester",
+            "credentials": {
+                "googleSheetsOAuth2Api": {
+                    "id": "Kyht9IVH9QrjEzCG",
+                    "name": "Google Sheets OAuth2 API"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "description": "ছোট করে কিন্তু বিস্তারিত ভালো করে লিখতে হবে ।and BTEB AI kota bolbe এবং\nTools:\n# Holyday_Data\n# Exam_Data \n# Subject_Every_Semester\n\nএই Tools গুলো ব্যবহার করে কাজ করতে হবে "
+            },
+            "type": "@n8n/n8n-nodes-langchain.toolThink",
+            "typeVersion": 1.1,
+            "position": [
+                -1104,
+                1344
+            ],
+            "id": "52eb070c-2ffb-406c-9ba4-9ba8a751716f",
+            "name": "Think"
+        },
+        {
+            "parameters": {
+                "documentId": {
+                    "__rl": true,
+                    "value": "19WL-mEYJVJj2v5yVXiruk8yF-1_pRL6fDjeYYJK31AI",
+                    "mode": "list",
+                    "cachedResultName": "Exam Data",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19WL-mEYJVJj2v5yVXiruk8yF-1_pRL6fDjeYYJK31AI/edit?usp=drivesdk"
+                },
+                "sheetName": {
+                    "__rl": true,
+                    "value": "gid=0",
+                    "mode": "list",
+                    "cachedResultName": "Sheet1",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19WL-mEYJVJj2v5yVXiruk8yF-1_pRL6fDjeYYJK31AI/edit#gid=0"
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.googleSheetsTool",
+            "typeVersion": 4.7,
+            "position": [
+                -544,
+                1344
+            ],
+            "id": "b03a1b27-9351-4397-ad3a-6316026ae84d",
+            "name": "Exam_Data",
+            "credentials": {
+                "googleSheetsOAuth2Api": {
+                    "id": "Kyht9IVH9QrjEzCG",
+                    "name": "Google Sheets OAuth2 API"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "documentId": {
+                    "__rl": true,
+                    "value": "1ZX8r063CtM7zntbD2Mb8PXWH0F16S2dT1kf8gvQqi-k",
+                    "mode": "list",
+                    "cachedResultName": "Result",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZX8r063CtM7zntbD2Mb8PXWH0F16S2dT1kf8gvQqi-k/edit?usp=drivesdk"
+                },
+                "sheetName": {
+                    "__rl": true,
+                    "value": "gid=0",
+                    "mode": "list",
+                    "cachedResultName": "Sheet1",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZX8r063CtM7zntbD2Mb8PXWH0F16S2dT1kf8gvQqi-k/edit#gid=0"
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.googleSheetsTool",
+            "typeVersion": 4.7,
+            "position": [
+                -832,
+                1344
+            ],
+            "id": "57c46c28-101f-47b8-8f1d-6bbcaed1a31d",
+            "name": "Result",
+            "credentials": {
+                "googleSheetsOAuth2Api": {
+                    "id": "Kyht9IVH9QrjEzCG",
+                    "name": "Google Sheets OAuth2 API"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "description": "call this tool to check stduent Seat_Plan",
+                "workflowId": {
+                    "__rl": true,
+                    "value": "5wWFfgUoEiMI90f1",
+                    "mode": "list",
+                    "cachedResultUrl": "/workflow/5wWFfgUoEiMI90f1",
+                    "cachedResultName": "SET_PLAN_AI"
+                },
+                "workflowInputs": {
+                    "mappingMode": "defineBelow",
+                    "value": {},
+                    "matchingColumns": [],
+                    "schema": [],
+                    "attemptToConvertTypes": false,
+                    "convertFieldsToString": false
+                }
+            },
+            "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+            "typeVersion": 2.2,
+            "position": [
+                -400,
+                1328
+            ],
+            "id": "e60f7447-fb26-4ff7-989d-539a3d605f78",
+            "name": "Seat_plan_Data"
+        },
+        {
+            "parameters": {
+                "content": "## I'm a note \n**Double click** to edit me. [Guide](https://docs.n8n.io/workflows/sticky-notes/)\n\n\n🎯 আমাদের AI Assistant কী?\n\nBTEB Student Assistant হলো একটি AI ভিত্তিক Chatbot, যা বিশেষভাবে Polytechnic Students-দের জন্য তৈরি। এর মূল কাজ হলো ছাত্রদের দৈনন্দিন প্রয়োজনীয় তথ্য দ্রুত, সহজ ও সঠিকভাবে দেওয়া।\n\nএটি কাজ করে আমাদের বিভিন্ন Database (Google Sheet বা Excel Sheet) এর সাথে যুক্ত হয়ে। ছাত্ররা যখন কোনো প্রশ্ন করবে, তখন এই Assistant প্রথমে Database চেক করবে, আর উত্তর থাকলে সরাসরি দিয়ে দেবে। যদি উত্তর Database-এ না থাকে, তাহলে একটি polite fallback message দেখাবে\n\n\n\n⚙️ এটি কীভাবে কাজ করে?\n\nছাত্ররা সাধারণভাবে বাংলায় বা ইংরেজিতে প্রশ্ন করে।\n\nAI Assistant সেই প্রশ্ন বিশ্লেষণ করে (Query Analysis)।\n\nনির্দিষ্ট Database থেকে মিল খুঁজে বের করে।\n\nযদি তথ্য পাওয়া যায়, সরাসরি ছাত্রকে জানিয়ে দেয়।\n\nযদি না পাওয়া যায়, তখন বলে: “এই তথ্য এখন আমার ডাটাবেজে নেই।”",
+                "height": 560,
+                "width": 624
+            },
+            "type": "n8n-nodes-base.stickyNote",
+            "position": [
+                480,
+                1104
+            ],
+            "typeVersion": 1,
+            "id": "20a6e256-590b-4885-86c8-a96aa78c99b4",
+            "name": "Sticky Note"
+        },
+        {
+            "parameters": {
+                "content": "## I'm a note \n**Double click** to edit me. [Guide](https://docs.n8n.io/workflows/sticky-notes/)\n\n\n📂 আমাদের Database Sources\nAI Assistant কাজ করার জন্য আমরা আলাদা আলাদা Database ব্যবহার করেছি:\nHoliday_Data → সরকারি ছুটি এবং ক্যাম্পাস খোলা/বন্ধের তথ্য।\nExam_Data → পরীক্ষার তারিখ, নাম, ও রুটিন।\nResult_Data → শিক্ষার্থীর রেজাল্ট (Semester + Roll ভিত্তিক)।\nSubject_Every_Semester → প্রতি সেমিস্টারের বিষয়/Subject তালিকা।\nNotice_Box → সর্বশেষ অফিসিয়াল নোটিশ।\nBook_List_Data → প্রতিটি সেমিস্টারের অফিসিয়াল বইয়ের তালিকা।\nSeat_Plan_Data → পরীক্ষার সিট প্ল্যান (Roll ভিত্তিক Room No & Serial No)।",
+                "height": 448,
+                "width": 624
+            },
+            "type": "n8n-nodes-base.stickyNote",
+            "position": [
+                400,
+                480
+            ],
+            "typeVersion": 1,
+            "id": "764f46f6-4e25-43dd-aac9-1a4ec22373af",
+            "name": "Sticky Note1"
+        },
+        {
+            "parameters": {
+                "jsCode": "// Safely get the AI response\nlet rawResponse = $input.item.json;\n\n// Handle different possible formats\nlet aiText = '';\n\nif (typeof rawResponse === 'string') {\n  aiText = rawResponse;\n} else if (typeof rawResponse === 'object' && rawResponse !== null) {\n  // Try common AI output fields\n  aiText = rawResponse.response ||\n           rawResponse.text ||\n           rawResponse.content ||\n           rawResponse.output ||\n           rawResponse.message ||\n           JSON.stringify(rawResponse); // fallback\n} else {\n  aiText = 'Sorry, I received an unexpected response.';\n}\n\n// Clean and ensure it's a non-empty string\naiText = String(aiText).trim();\nif (!aiText || aiText === 'null' || aiText === '{}') {\n  aiText = 'Hmm... I couldn’t generate a proper response. Please try again.';\n}\n\n// RETURN A CLEAN JSON OBJECT\nreturn {\n  json: {\n    reply: aiText\n  }\n};"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                -768,
+                912
+            ],
+            "id": "9838f8ab-42b0-4ec3-85e0-7947c0b0a7b4",
+            "name": "Code in JavaScript"
+        },
+        {
+            "parameters": {
+                "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+            "typeVersion": 1,
+            "position": [
+                -1264,
+                1120
+            ],
+            "id": "00a0cb1b-4580-4466-845c-16b4f0c533b5",
+            "name": "Google Gemini Chat Model",
+            "credentials": {
+                "googlePalmApi": {
+                    "id": "5Npz6zTjlo1qZSLt",
+                    "name": "Google Gemini(PaLM) Api account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "public": true,
+                "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+            "typeVersion": 1.4,
+            "position": [
+                -1376,
+                928
+            ],
+            "id": "faf4801f-32a4-47cb-8131-345cc490366e",
+            "name": "When chat message received",
+            "webhookId": "73d01429-6cc0-4415-bf05-ea4ed1b6a987"
+        }
+    ],
+    "connections": {
+        "AI Agent": {
+            "main": [
+                [
+                    {
+                        "node": "Code in JavaScript",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Holyday_Data": {
+            "ai_tool": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "ai_tool",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Subject_Every_Semester": {
+            "ai_tool": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "ai_tool",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Think": {
+            "ai_tool": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "ai_tool",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Exam_Data": {
+            "ai_tool": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "ai_tool",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Result": {
+            "ai_tool": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "ai_tool",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Seat_plan_Data": {
+            "ai_tool": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "ai_tool",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Code in JavaScript": {
+            "main": [
+                []
+            ]
+        },
+        "Google Gemini Chat Model": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "When chat message received": {
+            "main": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "pinData": {},
+    "meta": {
+        "templateCredsSetupCompleted": true,
+        "instanceId": "a4786ac7e1a15020d04995f2e75207bd821de402b453c1604d23a0926d0ca093"
+    }
+}
