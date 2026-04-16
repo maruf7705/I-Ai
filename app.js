@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const welcomeScreen = document.getElementById('welcome-screen');
     const chatTitle = document.getElementById('chat-title');
     const promptChips = document.querySelectorAll('.chip');
+    const langToggleButton = document.getElementById('lang-toggle-button');
 
     // --- Modal Elements ---
     const modal = {
@@ -29,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Webhook URL
-    const webhookUrl = 'https://sadikco97.app.n8n.cloud/webhook/polyconnect';
+    const webhookUrl = 'https://sadikco97.app.n8n.cloud/webhook/73d01429-6cc0-4415-bf05-ea4ed1b6a987/chat';
 
     // App State
     let conversations = [];
@@ -46,8 +47,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 modal.inputContainer.classList.toggle('hidden', !options.prompt);
                 modal.input.value = options.prompt ? (options.placeholder || '') : '';
 
-                modal.confirmButton.textContent = options.confirmText || 'Confirm';
-                modal.cancelButton.textContent = options.cancelText || 'Cancel';
+                modal.confirmButton.textContent = options.confirmText || I18n.t('modalConfirm');
+                modal.cancelButton.textContent = options.cancelText || I18n.t('modalCancel');
 
                 modal.backdrop.classList.remove('hidden');
 
@@ -81,11 +82,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Initialization ---
     function initializeApp() {
+        // Initialize i18n FIRST
+        I18n.init();
+
         attachEventListeners();
         loadConversations();
         loadTheme();
         autoResizeTextarea();
         updateWelcomeScreen();
+
+        // Listen for language changes to refresh dynamic UI
+        I18n.onChange(() => {
+            updateChatHistoryUI();
+            updateChatTitle();
+        });
     }
 
     function attachEventListeners() {
@@ -102,6 +112,13 @@ document.addEventListener('DOMContentLoaded', () => {
         searchHistoryInput.addEventListener('input', filterChatHistory);
         deleteAllHistoryButton.addEventListener('click', deleteAllChatHistory);
         menuButton.addEventListener('click', toggleSidebar);
+
+        // Language toggle
+        if (langToggleButton) {
+            langToggleButton.addEventListener('click', () => {
+                I18n.toggle();
+            });
+        }
 
         // Sidebar backdrop click to close (mobile)
         if (sidebarBackdrop) {
@@ -179,10 +196,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const title = conversation.title ||
                 (conversation.messages.length > 0
                     ? conversation.messages[0].message.substring(0, 40) + (conversation.messages[0].message.length > 40 ? '…' : '')
-                    : 'New Chat');
+                    : I18n.t('newChat'));
             chatTitle.textContent = title;
         } else {
-            chatTitle.textContent = 'BTEB Student Help';
+            chatTitle.textContent = I18n.t('chatTitleDefault');
         }
     }
 
@@ -230,15 +247,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     saveMessageToHistory(botReply, 'bot');
                 } else {
                     console.warn('Unexpected response format:', data);
-                    appendMessage('Received a response but could not parse it.', 'bot', new Date(), true);
+                    appendMessage(I18n.t('unparsedResponse'), 'bot', new Date(), true);
                 }
             })
             .catch(error => {
                 hideLoadingIndicator();
                 setProcessing(false);
                 console.error('Error:', error);
-                appendMessage('Something went wrong. Please try again.', 'bot', new Date(), true);
-                saveMessageToHistory('Something went wrong. Please try again.', 'bot');
+                appendMessage(I18n.t('errorResponse'), 'bot', new Date(), true);
+                saveMessageToHistory(I18n.t('errorResponse'), 'bot');
             });
     }
 
@@ -275,7 +292,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (sender === 'user') {
             messageTextElement.addEventListener('dblclick', async () => {
-                const newText = await Modal.show('Edit Message', '', { prompt: true, placeholder: message, confirmText: 'Save' });
+                const newText = await Modal.show(
+                    I18n.t('editMessageTitle'),
+                    '',
+                    { prompt: true, placeholder: message, confirmText: I18n.t('editMessageSave') }
+                );
                 if (newText !== null) {
                     updateMessage(timestamp, newText);
                 }
@@ -377,7 +398,7 @@ document.addEventListener('DOMContentLoaded', () => {
             emptyState.classList.add('history-empty-state');
             emptyState.innerHTML = `
                 <i class="material-icons" aria-hidden="true">chat_bubble_outline</i>
-                <p>No chats yet.<br>Start a new conversation!</p>
+                <p>${I18n.t('noChatsYet')}<br>${I18n.t('startConversation')}</p>
             `;
             chatHistoryContainer.appendChild(emptyState);
             return;
@@ -392,7 +413,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const textSpan = document.createElement('span');
-            const conversationTitle = conversation.title || (conversation.messages.length > 0 ? conversation.messages[0].message : 'New Chat');
+            const conversationTitle = conversation.title || (conversation.messages.length > 0 ? conversation.messages[0].message : I18n.t('newChat'));
             textSpan.textContent = conversationTitle.substring(0, 25) + (conversationTitle.length > 25 ? '…' : '');
             textSpan.style.flexGrow = '1';
             textSpan.style.cursor = 'pointer';
@@ -402,7 +423,11 @@ document.addEventListener('DOMContentLoaded', () => {
             textSpan.addEventListener('click', () => loadConversation(conversation.id));
 
             textSpan.addEventListener('dblclick', async () => {
-                const newTitle = await Modal.show('Rename Chat', '', { prompt: true, placeholder: conversationTitle, confirmText: 'Rename' });
+                const newTitle = await Modal.show(
+                    I18n.t('renameChatTitle'),
+                    '',
+                    { prompt: true, placeholder: conversationTitle, confirmText: I18n.t('renameChatConfirm') }
+                );
                 if (newTitle !== null && newTitle.trim() !== '') {
                     renameConversation(conversation.id, newTitle);
                 }
@@ -430,7 +455,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function deleteAllChatHistory() {
-        const confirmed = await Modal.show('Delete All History?', 'This action cannot be undone.');
+        const confirmed = await Modal.show(
+            I18n.t('deleteAllTitle'),
+            I18n.t('deleteAllText')
+        );
         if (confirmed) {
             conversations = [];
             activeConversationId = null;
@@ -443,7 +471,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function deleteConversation(conversationId) {
-        const confirmed = await Modal.show('Delete Chat?', 'Are you sure you want to delete this chat?');
+        const confirmed = await Modal.show(
+            I18n.t('deleteChatTitle'),
+            I18n.t('deleteChatText')
+        );
         if (!confirmed) return;
 
         const wasActive = conversationId === activeConversationId;

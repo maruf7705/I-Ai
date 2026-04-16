@@ -8,10 +8,11 @@
     <meta property="og:title" content="Polyconnect — BTEB AI Assistant">
     <meta property="og:description" content="AI-powered assistant for BTEB polytechnic students.">
     <link rel="icon" href="logo.png" type="image/png">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="lang.js"></script>
 </head>
 <body>
     <div id="app-container" class="sidebar-collapsed">
@@ -21,22 +22,22 @@
         <div id="sidebar">
             <div id="sidebar-header">
                 <img src="logo.png" alt="Polyconnect Logo" id="logo">
-                <h2>Polyconnect</h2>
+                <h2 data-i18n="sidebarTitle">Polyconnect</h2>
             </div>
             <div id="search-container">
                 <i class="material-icons">search</i>
-                <input type="text" id="search-history-input" placeholder="Search history..." aria-label="Search chat history">
+                <input type="text" id="search-history-input" placeholder="Search history..." data-i18n-placeholder="searchPlaceholder" aria-label="Search chat history">
             </div>
             <div id="new-chat-button" class="pro-button secondary" role="button" tabindex="0" aria-label="Start a new chat">
                 <i class="material-icons">add</i>
-                <span>New Chat</span>
+                <span data-i18n="newChat">New Chat</span>
             </div>
             <div id="chat-history" role="list" aria-label="Chat history">
                 <!-- Chat history items will be dynamically added here -->
             </div>
             <button id="delete-all-history-button" class="pro-button destructive" aria-label="Delete all chat history">
                     <i class="material-icons">delete_forever</i>
-                    <span>Delete All History</span>
+                    <span data-i18n="deleteAllHistory">Delete All History</span>
             </button>
         </div>
 
@@ -46,9 +47,15 @@
                     <button id="menu-button" class="pro-button ghost icon-only" aria-label="Toggle sidebar">
                         <i class="material-icons">menu</i>
                     </button>
-                    <h1 id="chat-title">BTEB Student Help</h1>
+                    <h1 id="chat-title" data-i18n="chatTitleDefault">BTEB Student Help</h1>
                     <div id="header-buttons">
-                        <button id="clear-chat-button" class="pro-button ghost" aria-label="Clear current chat">Clear</button>
+                        <button id="clear-chat-button" class="pro-button ghost" aria-label="Clear current chat" data-i18n="clearButton">Clear</button>
+
+                        <!-- Language Toggle -->
+                        <button id="lang-toggle-button" class="pro-button ghost lang-switcher" aria-label="Switch to Bangla" title="Switch Language">
+                            <span class="lang-label">বাং</span>
+                        </button>
+
                         <button id="theme-toggle-button" class="pro-button ghost icon-only" aria-label="Toggle dark mode">
                             <i class="material-icons">brightness_4</i>
                         </button>
@@ -59,13 +66,13 @@
                 <div id="welcome-screen">
                     <div class="welcome-inner">
                         <img src="logo.png" alt="Polyconnect" class="welcome-logo">
-                        <h2>Welcome to Polyconnect</h2>
-                        <p>Your AI-powered BTEB study assistant. Ask me anything about your courses, exams, or projects.</p>
+                        <h2 data-i18n="welcomeTitle">Welcome to Polyconnect</h2>
+                        <p data-i18n="welcomeDesc">Your AI-powered BTEB study assistant. Ask me anything about your courses, exams, or projects.</p>
                         <div class="prompt-chips">
-                            <button class="chip" data-prompt="Explain Ohm's Law simply">⚡ Explain Ohm's Law</button>
-                            <button class="chip" data-prompt="Help me with a math problem">📐 Math Help</button>
-                            <button class="chip" data-prompt="What topics are in the BTEB syllabus?">📚 BTEB Syllabus</button>
-                            <button class="chip" data-prompt="Write a lab report for me">🧪 Lab Report</button>
+                            <button class="chip" data-prompt="Explain Ohm's Law simply" data-i18n="chipOhm" data-i18n-prompt="chipOhmPrompt">⚡ Explain Ohm's Law</button>
+                            <button class="chip" data-prompt="Help me with a math problem" data-i18n="chipMath" data-i18n-prompt="chipMathPrompt">📐 Math Help</button>
+                            <button class="chip" data-prompt="What topics are in the BTEB syllabus?" data-i18n="chipSyllabus" data-i18n-prompt="chipSyllabusPrompt">📚 BTEB Syllabus</button>
+                            <button class="chip" data-prompt="Write a lab report for me" data-i18n="chipLab" data-i18n-prompt="chipLabPrompt">🧪 Lab Report</button>
                         </div>
                     </div>
                 </div>
@@ -76,12 +83,12 @@
 
                 <div id="input-container">
                     <div class="input-wrapper">
-                        <textarea id="user-input" placeholder="Type your message..." rows="1" aria-label="Message input"></textarea>
+                        <textarea id="user-input" placeholder="Type your message..." rows="1" aria-label="Message input" data-i18n-placeholder="inputPlaceholder"></textarea>
                         <button id="send-button" class="pro-button primary icon-only" aria-label="Send message">
                             <i class="material-icons">send</i>
                         </button>
                     </div>
-                    <span class="input-hint">Press Enter to send · Shift+Enter for new line</span>
+                    <span class="input-hint" data-i18n="inputHint">Press Enter to send · Shift+Enter for new line</span>
                 </div>
             </div>
         </div>
@@ -95,8 +102,8 @@
                 <input type="text" id="modal-input" aria-label="Modal input" />
             </div>
             <div id="modal-buttons">
-                <button id="modal-cancel-button" class="pro-button ghost">Cancel</button>
-                <button id="modal-confirm-button" class="pro-button primary">Confirm</button>
+                <button id="modal-cancel-button" class="pro-button ghost" data-i18n="modalCancel">Cancel</button>
+                <button id="modal-confirm-button" class="pro-button primary" data-i18n="modalConfirm">Confirm</button>
             </div>
         </div>
     </div>

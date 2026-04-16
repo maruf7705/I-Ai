@@ -1,6 +1,7 @@
 /* ============================================================
    POLYCONNECT — Premium Chat UI
    Design System & Component Styles
+   Bilingual: English (en) & বাংলা (bn)
    ============================================================ */
 
 /* --- Reset --- */
@@ -129,6 +130,41 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background-color var(--transition-base), color var(--transition-base);
+}
+
+/* --- Bangla Font Mode --- */
+body.lang-bn {
+  font-family: "Noto Sans Bengali", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.8;
+}
+
+body.lang-bn #user-input,
+body.lang-bn .chip,
+body.lang-bn .pro-button,
+body.lang-bn .chat-history-item,
+body.lang-bn #search-history-input {
+  font-family: "Noto Sans Bengali", "Inter", sans-serif;
+}
+
+body.lang-bn .message-content {
+  line-height: 1.9;
+}
+
+body.lang-bn .welcome-inner h2 {
+  font-size: var(--text-3xl);
+  letter-spacing: 0;
+}
+
+body.lang-bn .welcome-inner p {
+  line-height: 1.9;
+}
+
+body.lang-bn #sidebar-header h2 {
+  letter-spacing: 0;
+}
+
+body.lang-bn .input-hint {
+  font-size: 12px;
 }
 
 /* --- Focus Visible (Accessibility) --- */
@@ -374,6 +410,50 @@ body {
   align-items: center;
   gap: var(--space-2);
   flex-shrink: 0;
+}
+
+/* --- Language Switcher Button --- */
+.lang-switcher {
+  position: relative;
+  min-width: 48px;
+  height: 36px;
+  border-radius: var(--radius-full) !important;
+  padding: 0 var(--space-3) !important;
+  font-weight: 700;
+  font-size: var(--text-sm);
+  letter-spacing: 0.02em;
+  border: 1.5px solid var(--border-strong) !important;
+  background: var(--surface) !important;
+  color: var(--text-primary) !important;
+  overflow: hidden;
+  transition: all var(--transition-fast);
+}
+
+.lang-switcher:hover {
+  border-color: var(--primary) !important;
+  background: var(--primary-subtle) !important;
+  color: var(--primary) !important;
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.lang-switcher .lang-label {
+  display: inline-block;
+  transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1),
+              opacity 200ms ease;
+}
+
+.lang-switcher:active .lang-label {
+  transform: scale(0.85);
+}
+
+body.lang-bn .lang-switcher .lang-label {
+  font-family: "Inter", sans-serif;
+  font-size: var(--text-sm);
+}
+
+body.lang-en .lang-switcher .lang-label {
+  font-family: "Noto Sans Bengali", sans-serif;
+  font-size: 13px;
 }
 
 /* --- Welcome Screen --- */
