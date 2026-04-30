@@ -1,0 +1,189 @@
+{
+    "nodes": [
+        {
+            "parameters": {
+                "inputSource": "passthrough"
+            },
+            "type": "n8n-nodes-base.executeWorkflowTrigger",
+            "typeVersion": 1.1,
+            "position": [
+                16,
+                -80
+            ],
+            "id": "15cca46e-5e8f-4daf-8d5f-e543fac4cfcc",
+            "name": "When Executed by Another Workflow"
+        },
+        {
+            "parameters": {
+                "jsCode": "// Extract roll number (5-8 digit number) from query\nconst query = String($input.first().json.query || '');\nconst match = query.match(/\\b(\\d{5,8})\\b/);\n\nif (match) {\n  return [{ json: { roll: match[1], found: true } }];\n}\n\n// No roll number found in query\nreturn [{ json: { roll: null, found: false } }];"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                260,
+                -80
+            ],
+            "id": "a1b2c3d4-1111-aaaa-bbbb-000000000001",
+            "name": "Extract Roll Number"
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "options": {
+                        "caseSensitive": true,
+                        "leftValue": "",
+                        "typeValidation": "strict"
+                    },
+                    "conditions": [
+                        {
+                            "id": "roll-check",
+                            "leftValue": "={{ $json.found }}",
+                            "rightValue": true,
+                            "operator": {
+                                "type": "boolean",
+                                "operation": "equals",
+                                "name": "filter.boolean.equals"
+                            }
+                        }
+                    ],
+                    "combinator": "and"
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2.2,
+            "position": [
+                500,
+                -80
+            ],
+            "id": "a1b2c3d4-2222-aaaa-bbbb-000000000002",
+            "name": "Roll Found?"
+        },
+        {
+            "parameters": {
+                "operation": "read",
+                "documentId": {
+                    "__rl": true,
+                    "value": "1fqUgusMKTVxgo80-bUe5tAct_RgwUv47PMqLEx0d9kk",
+                    "mode": "list",
+                    "cachedResultName": "SET PLAN",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fqUgusMKTVxgo80-bUe5tAct_RgwUv47PMqLEx0d9kk/edit?usp=drivesdk"
+                },
+                "sheetName": {
+                    "__rl": true,
+                    "value": "gid=0",
+                    "mode": "list",
+                    "cachedResultName": "Sheet1",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fqUgusMKTVxgo80-bUe5tAct_RgwUv47PMqLEx0d9kk/edit#gid=0"
+                },
+                "filtersUI": {
+                    "values": [
+                        {
+                            "lookupColumn": "Roll Number",
+                            "lookupValue": "={{ $json.roll }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.googleSheets",
+            "typeVersion": 4.5,
+            "position": [
+                740,
+                -160
+            ],
+            "id": "a1b2c3d4-3333-aaaa-bbbb-000000000003",
+            "name": "Lookup Seat Plan",
+            "credentials": {
+                "googleSheetsOAuth2Api": {
+                    "id": "Kyht9IVH9QrjEzCG",
+                    "name": "Google Sheets OAuth2 API"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "jsCode": "const items = $input.all();\n\nif (items.length === 0 || !items[0].json['Roll Number']) {\n  return [{\n    json: {\n      output: 'এই রোল নম্বরটি আমাদের সিট প্ল্যানে নেই। রোল নম্বরটি ঠিকঠাক দিয়েছেন কিনা একবার চেক করুন।'\n    }\n  }];\n}\n\nconst row = items[0].json;\nconst output = `আপনার সিট প্ল্যান:\\nরোল নম্বর: ${row['Roll Number']}\\nসেমিস্টার: ${row['Semester']}\\nরুম নম্বর: ${row['Room No']}\\nবিভাগ: ${row['Department']}`;\n\nreturn [{ json: { output } }];"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                980,
+                -160
+            ],
+            "id": "a1b2c3d4-4444-aaaa-bbbb-000000000004",
+            "name": "Format Response"
+        },
+        {
+            "parameters": {
+                "jsCode": "return [{\n  json: {\n    output: 'আপনার রোল নম্বরটি দিন।'\n  }\n}];"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                740,
+                40
+            ],
+            "id": "a1b2c3d4-5555-aaaa-bbbb-000000000005",
+            "name": "Ask for Roll"
+        }
+    ],
+    "connections": {
+        "When Executed by Another Workflow": {
+            "main": [
+                [
+                    {
+                        "node": "Extract Roll Number",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Extract Roll Number": {
+            "main": [
+                [
+                    {
+                        "node": "Roll Found?",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Roll Found?": {
+            "main": [
+                [
+                    {
+                        "node": "Lookup Seat Plan",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Ask for Roll",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Lookup Seat Plan": {
+            "main": [
+                [
+                    {
+                        "node": "Format Response",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "pinData": {},
+    "meta": {
+        "templateCredsSetupCompleted": true,
+        "instanceId": "a4786ac7e1a15020d04995f2e75207bd821de402b453c1604d23a0926d0ca093"
+    }
+}

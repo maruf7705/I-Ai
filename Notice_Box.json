@@ -2,23 +2,6 @@
     "nodes": [
         {
             "parameters": {
-                "promptType": "define",
-                "text": "={{ $json.chatInput }}",
-                "options": {
-                    "systemMessage": "=You are BTEB Student Assistant for Bangladesh Polytechnic students.\n\nReply rules:\n- Always Bangla\n- Plain text only\n- Short, clear, student-friendly\n\nUser input: {{ $json.chatInput }}\nTime: {{ $now }}\n\nSources:\nHoliday_Data, Exam_Data, Result_Data, Subject_Every_Semester, Notice_Box, Book_List_Data, Seat_Plan_Data\n\nWorkflow:\n1. Detect intent\n2. Query the correct source\n3. If missing data, ask only the minimum needed\n4. If not found, say: \"এই তথ্য এখন আমার ডাটাবেজে নেই।\"\n\nIntent map:\n- Holiday / campus open → Holiday_Data\n- Exam date / next exam → Exam_Data (need semester)\n- Exam routine → Exam_Data (need semester + exam type)\n- Result → Result_Data (need semester + roll)\n- Subject list → Subject_Every_Semester (need semester)\n- Book list → Book_List_Data (need semester, no extra question)\n- Seat plan → Seat_Plan_Data (need roll, no extra question)\n- Notice → Notice_Box\n\nExtra rules:\n- If holiday exists, say holiday name + closed duration\n- If no holiday, say: \"ক্যাম্পাস খোলা থাকবে।\"\n- If only semester is given, return available info from Exam_Data, Subject_Every_Semester, Book_List_Data, Notice_Box\n- Never use Result_Data without roll number\n- Use simple line-by-line formatting for routine, result, book list, seat plan"
-                }
-            },
-            "type": "@n8n/n8n-nodes-langchain.agent",
-            "typeVersion": 2.2,
-            "position": [
-                -1120,
-                912
-            ],
-            "id": "17d7afbb-0c0e-47bd-9653-e7a1dc26a933",
-            "name": "AI Agent"
-        },
-        {
-            "parameters": {
                 "documentId": {
                     "__rl": true,
                     "value": "1X2eoSiQp6Pn1yH1K5yk-omtE_waciNcAUBO8a6TZBEI",
@@ -38,10 +21,10 @@
             "type": "n8n-nodes-base.googleSheetsTool",
             "typeVersion": 4.7,
             "position": [
-                -976,
+                -1040,
                 1328
             ],
-            "id": "992c9ace-d943-4327-8033-40ddbc379b71",
+            "id": "cb7512a6-f4c4-41d7-bcce-679c0fdaf3d2",
             "name": "Holyday_Data",
             "credentials": {
                 "googleSheetsOAuth2Api": {
@@ -71,10 +54,10 @@
             "type": "n8n-nodes-base.googleSheetsTool",
             "typeVersion": 4.7,
             "position": [
-                -688,
-                1312
+                -784,
+                1264
             ],
-            "id": "6874951c-70b4-41f4-852e-9f9445ee211c",
+            "id": "2e1ed9c0-71d7-4b5a-8c79-0c3bdff74976",
             "name": "Subject_Every_Semester",
             "credentials": {
                 "googleSheetsOAuth2Api": {
@@ -85,15 +68,15 @@
         },
         {
             "parameters": {
-                "description": "ছোট করে কিন্তু বিস্তারিত ভালো করে লিখতে হবে ।and BTEB AI kota bolbe এবং\nTools:\n# Holyday_Data\n# Exam_Data \n# Subject_Every_Semester\n\nএই Tools গুলো ব্যবহার করে কাজ করতে হবে "
+                "description": "Use this tool to think step-by-step before responding. Analyze the student's intent, determine which tool to call, check if required information (semester, roll number, etc.) is available, and plan the response format. Always think in Bangla context for BTEB students."
             },
             "type": "@n8n/n8n-nodes-langchain.toolThink",
             "typeVersion": 1.1,
             "position": [
-                -1104,
-                1344
+                -1168,
+                1360
             ],
-            "id": "52eb070c-2ffb-406c-9ba4-9ba8a751716f",
+            "id": "64b36884-3d9b-4b1c-8724-6f09a6002e59",
             "name": "Think"
         },
         {
@@ -117,10 +100,10 @@
             "type": "n8n-nodes-base.googleSheetsTool",
             "typeVersion": 4.7,
             "position": [
-                -544,
-                1344
+                -656,
+                1232
             ],
-            "id": "b03a1b27-9351-4397-ad3a-6316026ae84d",
+            "id": "88fe6aa2-9f2f-4fcf-9aeb-19c722a03281",
             "name": "Exam_Data",
             "credentials": {
                 "googleSheetsOAuth2Api": {
@@ -150,10 +133,10 @@
             "type": "n8n-nodes-base.googleSheetsTool",
             "typeVersion": 4.7,
             "position": [
-                -832,
-                1344
+                -928,
+                1312
             ],
-            "id": "57c46c28-101f-47b8-8f1d-6bbcaed1a31d",
+            "id": "b94b0116-b350-4c33-be9c-8364c4ed0c23",
             "name": "Result",
             "credentials": {
                 "googleSheetsOAuth2Api": {
@@ -164,128 +147,151 @@
         },
         {
             "parameters": {
-                "description": "call this tool to check stduent Seat_Plan",
+                "description": "Call this tool when a student asks about their exam seat plan. Pass the student's roll number as the query. This tool will return the student's room number, semester, and department.",
                 "workflowId": {
                     "__rl": true,
-                    "value": "5wWFfgUoEiMI90f1",
+                    "value": "SA5t26eaMyOXYVzx",
                     "mode": "list",
-                    "cachedResultUrl": "/workflow/5wWFfgUoEiMI90f1",
-                    "cachedResultName": "SET_PLAN_AI"
+                    "cachedResultUrl": "/workflow/SA5t26eaMyOXYVzx",
+                    "cachedResultName": "Seat-Plan"
                 },
                 "workflowInputs": {
                     "mappingMode": "defineBelow",
-                    "value": {},
+                    "value": {
+                        "query": "={{ $fromAI('query', 'The student roll number or seat plan query') }}"
+                    },
                     "matchingColumns": [],
-                    "schema": [],
+                    "schema": [
+                        {
+                            "id": "query",
+                            "displayName": "query",
+                            "required": true,
+                            "defaultMatch": false,
+                            "display": true,
+                            "canBeUsedToMatch": true,
+                            "type": "string"
+                        }
+                    ],
                     "attemptToConvertTypes": false,
-                    "convertFieldsToString": false
+                    "convertFieldsToString": true
                 }
             },
             "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
             "typeVersion": 2.2,
             "position": [
-                -400,
-                1328
+                -496,
+                1184
             ],
-            "id": "e60f7447-fb26-4ff7-989d-539a3d605f78",
+            "id": "83b0bbe0-ae51-439f-a79a-f1247ff96c49",
             "name": "Seat_plan_Data"
         },
         {
             "parameters": {
-                "content": "## I'm a note \n**Double click** to edit me. [Guide](https://docs.n8n.io/workflows/sticky-notes/)\n\n\n🎯 আমাদের AI Assistant কী?\n\nBTEB Student Assistant হলো একটি AI ভিত্তিক Chatbot, যা বিশেষভাবে Polytechnic Students-দের জন্য তৈরি। এর মূল কাজ হলো ছাত্রদের দৈনন্দিন প্রয়োজনীয় তথ্য দ্রুত, সহজ ও সঠিকভাবে দেওয়া।\n\nএটি কাজ করে আমাদের বিভিন্ন Database (Google Sheet বা Excel Sheet) এর সাথে যুক্ত হয়ে। ছাত্ররা যখন কোনো প্রশ্ন করবে, তখন এই Assistant প্রথমে Database চেক করবে, আর উত্তর থাকলে সরাসরি দিয়ে দেবে। যদি উত্তর Database-এ না থাকে, তাহলে একটি polite fallback message দেখাবে\n\n\n\n⚙️ এটি কীভাবে কাজ করে?\n\nছাত্ররা সাধারণভাবে বাংলায় বা ইংরেজিতে প্রশ্ন করে।\n\nAI Assistant সেই প্রশ্ন বিশ্লেষণ করে (Query Analysis)।\n\nনির্দিষ্ট Database থেকে মিল খুঁজে বের করে।\n\nযদি তথ্য পাওয়া যায়, সরাসরি ছাত্রকে জানিয়ে দেয়।\n\nযদি না পাওয়া যায়, তখন বলে: “এই তথ্য এখন আমার ডাটাবেজে নেই।”",
-                "height": 560,
-                "width": 624
+                "content": "🎯 Polyconnect BTEB Student Assistant\nPRODUCTION v2.1 — Stable Build\n\n⚙️ Connected Tools:\n✅ Holyday_Data — ছুটি তথ্য\n✅ Exam_Data — পরীক্ষার তারিখ/রুটিন\n✅ Result — রেজাল্ট\n✅ Subject_Every_Semester — সাবজেক্ট\n✅ Seat_plan_Data — সিট প্ল্যান (sub-workflow)\n✅ Think — চিন্তা/বিশ্লেষণ\n\n🧠 LLM: GPT-5.4 (OpenAI)\n💾 Memory: 30 message window\n\n⏳ Coming Soon:\n⬜ Gmail (Email Escalation)\n⬜ Book_List_Data\n⬜ Notice_Box",
+                "height": 360,
+                "width": 400
             },
             "type": "n8n-nodes-base.stickyNote",
             "position": [
-                480,
-                1104
+                -96,
+                1024
             ],
             "typeVersion": 1,
-            "id": "20a6e256-590b-4885-86c8-a96aa78c99b4",
+            "id": "9ae8f00f-5247-4799-9a92-4675e3628d6b",
             "name": "Sticky Note"
         },
         {
             "parameters": {
-                "content": "## I'm a note \n**Double click** to edit me. [Guide](https://docs.n8n.io/workflows/sticky-notes/)\n\n\n📂 আমাদের Database Sources\nAI Assistant কাজ করার জন্য আমরা আলাদা আলাদা Database ব্যবহার করেছি:\nHoliday_Data → সরকারি ছুটি এবং ক্যাম্পাস খোলা/বন্ধের তথ্য।\nExam_Data → পরীক্ষার তারিখ, নাম, ও রুটিন।\nResult_Data → শিক্ষার্থীর রেজাল্ট (Semester + Roll ভিত্তিক)।\nSubject_Every_Semester → প্রতি সেমিস্টারের বিষয়/Subject তালিকা।\nNotice_Box → সর্বশেষ অফিসিয়াল নোটিশ।\nBook_List_Data → প্রতিটি সেমিস্টারের অফিসিয়াল বইয়ের তালিকা।\nSeat_Plan_Data → পরীক্ষার সিট প্ল্যান (Roll ভিত্তিক Room No & Serial No)।",
-                "height": 448,
-                "width": 624
-            },
-            "type": "n8n-nodes-base.stickyNote",
-            "position": [
-                400,
-                480
-            ],
-            "typeVersion": 1,
-            "id": "764f46f6-4e25-43dd-aac9-1a4ec22373af",
-            "name": "Sticky Note1"
-        },
-        {
-            "parameters": {
-                "jsCode": "// Safely get the AI response\nlet rawResponse = $input.item.json;\n\n// Handle different possible formats\nlet aiText = '';\n\nif (typeof rawResponse === 'string') {\n  aiText = rawResponse;\n} else if (typeof rawResponse === 'object' && rawResponse !== null) {\n  // Try common AI output fields\n  aiText = rawResponse.response ||\n           rawResponse.text ||\n           rawResponse.content ||\n           rawResponse.output ||\n           rawResponse.message ||\n           JSON.stringify(rawResponse); // fallback\n} else {\n  aiText = 'Sorry, I received an unexpected response.';\n}\n\n// Clean and ensure it's a non-empty string\naiText = String(aiText).trim();\nif (!aiText || aiText === 'null' || aiText === '{}') {\n  aiText = 'Hmm... I couldn’t generate a proper response. Please try again.';\n}\n\n// RETURN A CLEAN JSON OBJECT\nreturn {\n  json: {\n    reply: aiText\n  }\n};"
+                "jsCode": "const rawResponse = $input.item.json;\nlet aiText = '';\n\nif (typeof rawResponse === 'string') {\n  aiText = rawResponse;\n} else if (typeof rawResponse === 'object' && rawResponse !== null) {\n  aiText = rawResponse.response ||\n           rawResponse.text ||\n           rawResponse.content ||\n           rawResponse.output ||\n           rawResponse.message ||\n           JSON.stringify(rawResponse);\n} else {\n  aiText = 'দুঃখিত, সঠিক উত্তর তৈরি করা যায়নি।';\n}\n\naiText = String(aiText).trim();\nif (!aiText || aiText === 'null' || aiText === '{}') {\n  aiText = 'দুঃখিত, সঠিক উত্তর তৈরি করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।';\n}\n\nreturn { json: { reply: aiText } };"
             },
             "type": "n8n-nodes-base.code",
             "typeVersion": 2,
             "position": [
-                -768,
+                -448,
                 912
             ],
-            "id": "9838f8ab-42b0-4ec3-85e0-7947c0b0a7b4",
+            "id": "86a6c4ca-d286-4cd0-8c93-1b2a51878794",
             "name": "Code in JavaScript"
         },
         {
             "parameters": {
-                "options": {}
-            },
-            "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-            "typeVersion": 1,
-            "position": [
-                -1264,
-                1120
-            ],
-            "id": "00a0cb1b-4580-4466-845c-16b4f0c533b5",
-            "name": "Google Gemini Chat Model",
-            "credentials": {
-                "googlePalmApi": {
-                    "id": "5Npz6zTjlo1qZSLt",
-                    "name": "Google Gemini(PaLM) Api account"
-                }
-            }
-        },
-        {
-            "parameters": {
                 "public": true,
-                "initialMessages": "Hi there! 👋\nMy name is Maruf. How can I assist you today?",
+                "initialMessages": "আস্সালামু আলাইকুম! 👋\nআমি Polyconnect BTEB Student Assistant। আপনাকে কীভাবে সাহায্য করতে পারি?",
                 "options": {}
             },
             "type": "@n8n/n8n-nodes-langchain.chatTrigger",
             "typeVersion": 1.4,
             "position": [
-                -1376,
+                -1440,
                 928
             ],
-            "id": "faf4801f-32a4-47cb-8131-345cc490366e",
+            "id": "b1ddb8ee-df61-4a1c-b4b8-06240391db73",
             "name": "When chat message received",
             "webhookId": "73d01429-6cc0-4415-bf05-ea4ed1b6a987"
+        },
+        {
+            "parameters": {
+                "model": {
+                    "__rl": true,
+                    "value": "gpt-5.4",
+                    "mode": "list",
+                    "cachedResultName": "gpt-5.4"
+                },
+                "builtInTools": {},
+                "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+            "typeVersion": 1.3,
+            "position": [
+                -1568,
+                1264
+            ],
+            "id": "f7af2669-6948-4c64-8f1d-2b69d19558e1",
+            "name": "OpenAI Chat Model",
+            "credentials": {
+                "openAiApi": {
+                    "id": "QIp7UpCKKXV6treV",
+                    "name": "OpenAI account 2"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "contextWindowLength": 30
+            },
+            "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+            "typeVersion": 1.3,
+            "position": [
+                -1296,
+                1344
+            ],
+            "id": "1a0475b4-2ee1-4b1e-9a25-0a9da8f8b9e2",
+            "name": "Simple Memory"
+        },
+        {
+            "parameters": {
+                "promptType": "define",
+                "text": "={{ $json.chatInput }}",
+                "options": {
+                    "systemMessage": "# Polyconnect BTEB Student Assistant\n\nতুমি Polyconnect BTEB Student Assistant — বাংলাদেশের পলিটেকনিক ছাত্রদের জন্য একটি AI সহকারী।\n\nভাষা: সবসময় বাংলায় উত্তর দাও। Markdown ব্যবহার করো না (*, #, ** নয়)। শুধু plain text।\n\nবর্তমান সময়: {{ $now }}\n\n---\n\n# তোমার কাছে যে TOOLS আছে\n\n1. Holyday_Data → ছুটি ও ক্যাম্পাস খোলা/বন্ধ তথ্য\n2. Exam_Data → পরীক্ষার তারিখ ও রুটিন\n3. Result → শিক্ষার্থীর রেজাল্ট (সেমিস্টার + রোল দরকার)\n4. Subject_Every_Semester → প্রতি সেমিস্টারের সাবজেক্ট তালিকা\n5. Seat_plan_Data → সিট প্ল্যান (শুধু রোল নম্বর দরকার, query হিসেবে পাঠাও)\n6. Think → চিন্তা করার tool, জটিল প্রশ্নে ব্যবহার করো\n\n---\n\n# কাজের নিয়ম\n\nপ্রতিটি উত্তরের আগে Think tool ব্যবহার করে মনে মনে ৩টি ধাপ অনুসরণ করো:\n\nধাপ ১: ছাত্রের intent বোঝো\n  HOLIDAY → ছুটি জানতে চায়\n  EXAM → পরীক্ষার তারিখ/রুটিন\n  RESULT → রেজাল্ট দেখতে চায়\n  SUBJECT → সাবজেক্ট লিস্ট\n  SEAT_PLAN → সিট প্ল্যান\n  UNKNOWN → কোনোটাই মিলে না\n\nধাপ ২: দরকারি তথ্য আছে কিনা চেক করো\n  - যদি কোনো তথ্য না থাকে, শুধু সেটাই জিজ্ঞেস করো\n  - একসাথে একাধিক জিনিস জিজ্ঞেস করো না\n\nধাপ ৩: সঠিক tool call করো এবং উত্তর দাও\n\n---\n\n# প্রতিটি INTENT এর জন্য কী দরকার\n\nHOLIDAY:\n  দরকার: তারিখ (না দিলে আজকের তারিখ ধরো)\n  Tool: Holyday_Data\n  ছুটি থাকলে: \"[তারিখ]-এ [ছুটির নাম] উপলক্ষে ক্যাম্পাস বন্ধ।\"\n  ছুটি না থাকলে: \"ঐ দিন ক্যাম্পাস খোলা থাকবে।\"\n\nEXAM:\n  দরকার: সেমিস্টার + পরীক্ষার ধরন (মিডটার্ম/ফাইনাল/বোর্ড)\n  Tool: Exam_Data\n  সেমিস্টার না দিলে: \"আপনি কোন সেমিস্টারে পড়ছেন?\"\n  পরীক্ষার ধরন না দিলে: \"মিডটার্ম নাকি ফাইনাল পরীক্ষার তথ্য চাইছেন?\"\n\nRESULT:\n  দরকার: সেমিস্টার + রোল নম্বর\n  Tool: Result\n  প্রথমে সেমিস্টার জিজ্ঞেস করো, তারপর রোল। একসাথে দুটো জিজ্ঞেস করো না।\n\nSUBJECT:\n  দরকার: সেমিস্টার\n  Tool: Subject_Every_Semester\n  না দিলে: \"কোন সেমিস্টারের সাবজেক্ট লিস্ট চাইছেন?\"\n\nSEAT_PLAN:\n  দরকার: রোল নম্বর\n  Tool: Seat_plan_Data\n  না দিলে: \"আপনার রোল নম্বরটি দিন।\"\n  Seat_plan_Data tool কে query হিসেবে রোল নম্বর পাঠাও।\n  Tool থেকে প্রাপ্ত output সরাসরি ছাত্রকে দাও।\n\n---\n\n# UNKNOWN INTENT\n\nযদি ছাত্রের প্রশ্ন কোনো intent এ না পড়ে:\n  \"দুঃখিত, এই বিষয়ে আমি এখনো সাহায্য করতে পারছি না।\n  আপনি আমাকে যেসব বিষয়ে জিজ্ঞেস করতে পারেন:\n  ১. পরীক্ষার তারিখ ও রুটিন\n  ২. রেজাল্ট\n  ৩. সেমিস্টারের সাবজেক্ট\n  ৪. সিট প্ল্যান\n  ৫. ছুটির তথ্য\n  কী জানতে চান?\"\n\n---\n\n# গুরুত্বপূর্ণ নিয়ম\n\n1. Tool এর নাম, database, query, API — এসব শব্দ ছাত্রকে কখনো বলো না।\n2. Tool থেকে empty/null আসলে: \"এই তথ্যটি এখন আপডেট হয়নি। একটু পরে আবার চেষ্টা করুন।\"\n3. সালাম/হ্যালো পেলে উষ্ণভাবে সম্ভাষণ জানাও এবং কী কী সাহায্য করতে পারো তা বলো।\n4. আগের কথোপকথনে দেওয়া তথ্য (সেমিস্টার, রোল) মনে রাখো, আবার জিজ্ঞেস করো না।\n5. উত্তর ৮-১০ লাইনের বেশি নয়। প্রশ্ন ২-৩ লাইনের বেশি নয়।\n6. সবসময় ভদ্র, ধৈর্যশীল এবং সহানুভূতিশীল থাকো।\n\n---\n\n# সম্ভাষণ\n\n\"আস্সালামু আলাইকুম! আমি Polyconnect BTEB Student Assistant।\nআমি আপনাকে যেসব বিষয়ে সাহায্য করতে পারি:\n১. পরীক্ষার তারিখ ও রুটিন\n২. রেজাল্ট\n৩. সেমিস্টারের সাবজেক্ট\n৪. সিট প্ল্যান\n৫. ছুটির তথ্য\nকী জানতে চান?\""
+                }
+            },
+            "type": "@n8n/n8n-nodes-langchain.agent",
+            "typeVersion": 3.1,
+            "position": [
+                -1152,
+                928
+            ],
+            "id": "be7e8e9b-d6fb-4b3e-9f2d-207f66361f8b",
+            "name": "AI Agent1"
         }
     ],
     "connections": {
-        "AI Agent": {
-            "main": [
-                [
-                    {
-                        "node": "Code in JavaScript",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
         "Holyday_Data": {
             "ai_tool": [
                 [
                     {
-                        "node": "AI Agent",
+                        "node": "AI Agent1",
                         "type": "ai_tool",
                         "index": 0
                     }
@@ -296,7 +302,7 @@
             "ai_tool": [
                 [
                     {
-                        "node": "AI Agent",
+                        "node": "AI Agent1",
                         "type": "ai_tool",
                         "index": 0
                     }
@@ -307,7 +313,7 @@
             "ai_tool": [
                 [
                     {
-                        "node": "AI Agent",
+                        "node": "AI Agent1",
                         "type": "ai_tool",
                         "index": 0
                     }
@@ -318,7 +324,7 @@
             "ai_tool": [
                 [
                     {
-                        "node": "AI Agent",
+                        "node": "AI Agent1",
                         "type": "ai_tool",
                         "index": 0
                     }
@@ -329,7 +335,7 @@
             "ai_tool": [
                 [
                     {
-                        "node": "AI Agent",
+                        "node": "AI Agent1",
                         "type": "ai_tool",
                         "index": 0
                     }
@@ -340,24 +346,8 @@
             "ai_tool": [
                 [
                     {
-                        "node": "AI Agent",
+                        "node": "AI Agent1",
                         "type": "ai_tool",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "Code in JavaScript": {
-            "main": [
-                []
-            ]
-        },
-        "Google Gemini Chat Model": {
-            "ai_languageModel": [
-                [
-                    {
-                        "node": "AI Agent",
-                        "type": "ai_languageModel",
                         "index": 0
                     }
                 ]
@@ -367,7 +357,40 @@
             "main": [
                 [
                     {
-                        "node": "AI Agent",
+                        "node": "AI Agent1",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "OpenAI Chat Model": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "AI Agent1",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Simple Memory": {
+            "ai_memory": [
+                [
+                    {
+                        "node": "AI Agent1",
+                        "type": "ai_memory",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "AI Agent1": {
+            "main": [
+                [
+                    {
+                        "node": "Code in JavaScript",
                         "type": "main",
                         "index": 0
                     }
